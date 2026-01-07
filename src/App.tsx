@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route } from "react-router-dom";
 import { HomePage } from "./pages/HomePage";
 import { DevPage } from "./pages/DevPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { StatusAnnouncerProvider } from "./components/StatusAnnouncer";
 import "./index.css";
 
 function App() {
@@ -9,12 +10,14 @@ function App() {
   // Routes: /#/ (home), /#/dev (developer tools)
   return (
     <ErrorBoundary>
-      <HashRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/dev" element={<DevPage />} />
-        </Routes>
-      </HashRouter>
+      <StatusAnnouncerProvider>
+        <HashRouter>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/dev" element={<DevPage />} />
+          </Routes>
+        </HashRouter>
+      </StatusAnnouncerProvider>
     </ErrorBoundary>
   );
 }

@@ -9,17 +9,10 @@ import {
   Search,
 } from "lucide-react";
 import { systemKeeplists } from "../data/systemKeeplists";
-import { allItems } from "../data/allItems";
-import type { Keeplist, RequiredItem } from "../types";
-
-// Build items lookup map
-const itemsMap = new Map<string, RequiredItem>(
-  allItems.map((item) => [item.id, item])
-);
-
-function getItemById(itemId: string): RequiredItem | undefined {
-  return itemsMap.get(itemId);
-}
+import { allItems, getItemByIdWithFallback } from "../data/allItems";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { useConfirmDialog } from "../hooks/useConfirmDialog";
+import type { Keeplist } from "../types";
 
 function slugify(text: string): string {
   return text
@@ -75,8 +68,10 @@ export function KeeplistBuilder() {
     keeplistId: string;
     itemId: string;
   } | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const qtyInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
+  const { confirm, dialogProps } = useConfirmDialog();
 
   const isDev = import.meta.env.DEV;
 
@@ -205,7 +200,7 @@ export function KeeplistBuilder() {
     if (!newListName.trim()) return;
     const id = slugify(newListName);
     if (keeplists.some((kl) => kl.id === id)) {
-      alert("A keeplist with this name already exists");
+      setCreateError("A keeplist with this name already exists");
       return;
     }
     setKeeplists((prev) => [
@@ -214,11 +209,19 @@ export function KeeplistBuilder() {
     ]);
     setExpandedLists((prev) => new Set([...prev, id]));
     setNewListName("");
+    setCreateError(null);
   };
 
-  const removeKeeplist = (id: string) => {
-    if (!confirm("Remove this keeplist?")) return;
-    setKeeplists((prev) => prev.filter((kl) => kl.id !== id));
+  const removeKeeplist = async (id: string, name: string) => {
+    const confirmed = await confirm({
+      title: "Remove Keeplist",
+      message: `Remove "${name}" from the system keeplists?`,
+      confirmLabel: "Remove",
+      variant: "danger",
+    });
+    if (confirmed) {
+      setKeeplists((prev) => prev.filter((kl) => kl.id !== id));
+    }
   };
 
   const addItemToList = (keeplistId: string, itemId: string) => {
@@ -312,36 +315,48 @@ export function KeeplistBuilder() {
     }
   };
 
-  const resetToDefault = () => {
-    if (
-      !confirm(
-        "Reset to the current systemKeeplists.ts? Unsaved changes will be lost."
-      )
-    )
-      return;
-    setKeeplists(JSON.parse(JSON.stringify(systemKeeplists)));
+  const resetToDefault = async () => {
+    const confirmed = await confirm({
+      title: "Reset to Default",
+      message: "Reset to the current systemKeeplists.ts? Unsaved changes will be lost.",
+      confirmLabel: "Reset",
+      variant: "warning",
+    });
+    if (confirmed) {
+      setKeeplists(JSON.parse(JSON.stringify(systemKeeplists)));
+    }
   };
 
   return (
     <div className="space-y-4">
       {/* Add new keeplist */}
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={newListName}
-          onChange={(e) => setNewListName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addKeeplist()}
-          placeholder="New keeplist name..."
-          className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          onClick={addKeeplist}
-          disabled={!newListName.trim()}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-lg transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add List
-        </button>
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newListName}
+            onChange={(e) => {
+              setNewListName(e.target.value);
+              setCreateError(null);
+            }}
+            onKeyDown={(e) => e.key === "Enter" && addKeeplist()}
+            placeholder="New keeplist name..."
+            className={`flex-1 px-3 py-2 bg-slate-800 border rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              createError ? "border-red-500" : "border-slate-700"
+            }`}
+          />
+          <button
+            onClick={addKeeplist}
+            disabled={!newListName.trim()}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-lg transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add List
+          </button>
+        </div>
+        {createError && (
+          <p className="text-sm text-red-400">{createError}</p>
+        )}
       </div>
 
       {/* Keeplists */}
@@ -368,7 +383,7 @@ export function KeeplistBuilder() {
                 {keeplist.items.length} items
               </span>
               <button
-                onClick={() => removeKeeplist(keeplist.id)}
+                onClick={() => removeKeeplist(keeplist.id, keeplist.name)}
                 className="p-1 text-slate-500 hover:text-red-400 transition-colors"
                 title="Remove keeplist"
               >
@@ -380,14 +395,7 @@ export function KeeplistBuilder() {
             {expandedLists.has(keeplist.id) && (
               <div className="px-4 pb-3 space-y-2">
                 {keeplist.items.map((item) => {
-                  const itemData = getItemById(item.itemId) || {
-                    id: item.itemId,
-                    name: item.itemId
-                      .split("-")
-                      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                      .join(" "),
-                    rarity: "Common" as const,
-                  };
+                  const itemData = getItemByIdWithFallback(item.itemId);
 
                   return (
                     <div
@@ -608,6 +616,9 @@ export function KeeplistBuilder() {
           ? "In development mode, you can write directly to src/data/systemKeeplists.ts. Otherwise, download the file and replace it manually."
           : "Download the file and replace src/data/systemKeeplists.ts manually, then rebuild."}
       </p>
+
+      {/* Confirm Dialog */}
+      {dialogProps && <ConfirmDialog {...dialogProps} />}
     </div>
   );
 }

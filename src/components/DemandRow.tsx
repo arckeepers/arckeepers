@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { Minus, Plus, Check } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
+import { useStatusAnnouncer } from "../hooks/useStatusAnnouncer";
 import type { KeeplistItem } from "../types";
 
-/** Fade timing (shared with ItemCard) */
+/** Fade timing - delay before fade starts */
 const FADE_DELAY_MS = 500;
-const FADE_ANIMATION_MS = 500;
 
 interface DemandRowProps {
   keeplistId: string;
@@ -17,7 +17,7 @@ interface DemandRowProps {
   showCompleted: boolean;
 }
 
-export function DemandRow({
+export const DemandRow = memo(function DemandRow({
   keeplistId,
   keeplistName,
   item,
@@ -29,14 +29,44 @@ export function DemandRow({
   // Should this row be hidden? (completed and not showing completed items)
   const shouldHide = item.isCompleted && !showCompleted;
 
-  // All hooks must be called before any early returns
+  // Track previous shouldHide value to detect transitions
+  const prevShouldHideRef = useRef(shouldHide);
+
   // Initialize to 'hidden' if already completed (prevents flicker on load)
   const [fadeState, setFadeState] = useState<"visible" | "fading" | "hidden">(
-    () => shouldHide ? "hidden" : "visible"
+    () => (shouldHide ? "hidden" : "visible")
   );
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { updateItemQty, completeItem, settings } = useAppStore();
+  const { announce } = useStatusAnnouncer();
   const animationsEnabled = settings.animationsEnabled;
+
+  // Handlers with screen reader announcements
+  const handleIncrement = () => {
+    updateItemQty(keeplistId, item.itemId, 1);
+    const newQty = item.qtyOwned + 1;
+    const remaining = item.qtyRequired > 0 ? item.qtyRequired - newQty : null;
+    if (remaining !== null && remaining <= 0) {
+      announce(`${keeplistName}: Complete!`);
+    } else if (remaining !== null) {
+      announce(`${keeplistName}: ${newQty} of ${item.qtyRequired}`);
+    } else {
+      announce(`${keeplistName}: ${newQty}`);
+    }
+  };
+
+  const handleDecrement = () => {
+    if (item.qtyOwned > 0) {
+      updateItemQty(keeplistId, item.itemId, -1);
+      const newQty = item.qtyOwned - 1;
+      announce(`${keeplistName}: ${newQty} of ${item.qtyRequired > 0 ? item.qtyRequired : "unlimited"}`);
+    }
+  };
+
+  const handleComplete = () => {
+    completeItem(keeplistId, item.itemId);
+    announce(`${keeplistName}: Marked complete!`);
+  };
 
   // Calculate tabIndex for custom tab order:
   // 1. Search box (tabIndex=1)
@@ -49,33 +79,41 @@ export function DemandRow({
   const completeTabIndex = 10000 + baseIndex;
   const decrementTabIndex = 20000 + baseIndex;
 
-  // Handle state transitions during render (outside effect to avoid lint warnings)
-  // Reset to visible when shouldHide becomes false
-  if (!shouldHide && fadeState !== "visible") {
-    setFadeState("visible");
-  }
-  // When animations disabled, hide immediately (no fade)
-  if (shouldHide && !animationsEnabled && fadeState !== "hidden") {
-    setFadeState("hidden");
-  }
-
-  // Handle fade-out timing (only when animations enabled)
+  // Handle fade state transitions
   useEffect(() => {
-    // Skip if animations disabled (handled synchronously above)
-    if (!animationsEnabled) return;
+    const prevShouldHide = prevShouldHideRef.current;
+    prevShouldHideRef.current = shouldHide;
 
+    // Clear any existing timer
     if (fadeTimerRef.current) {
       clearTimeout(fadeTimerRef.current);
       fadeTimerRef.current = null;
     }
 
-    if (shouldHide && fadeState === "visible") {
-      fadeTimerRef.current = setTimeout(() => {
-        setFadeState("fading");
+    // Transition: was hiding -> now showing (user toggled "show completed")
+    if (prevShouldHide && !shouldHide) {
+      // Use microtask to avoid synchronous setState in effect
+      queueMicrotask(() => setFadeState("visible"));
+      return;
+    }
+
+    // Transition: was showing -> now hiding
+    if (!prevShouldHide && shouldHide) {
+      if (!animationsEnabled) {
+        // No animation - hide immediately (use microtask)
+        queueMicrotask(() => setFadeState("hidden"));
+      } else {
+        // Start fade after delay
         fadeTimerRef.current = setTimeout(() => {
-          setFadeState("hidden");
-        }, FADE_ANIMATION_MS);
-      }, FADE_DELAY_MS);
+          setFadeState("fading");
+        }, FADE_DELAY_MS);
+      }
+      return;
+    }
+
+    // Already hiding and animations just got disabled
+    if (shouldHide && !animationsEnabled && fadeState !== "hidden") {
+      queueMicrotask(() => setFadeState("hidden"));
     }
 
     return () => {
@@ -83,7 +121,14 @@ export function DemandRow({
         clearTimeout(fadeTimerRef.current);
       }
     };
-  }, [shouldHide, fadeState, animationsEnabled]);
+  }, [shouldHide, animationsEnabled, fadeState]);
+
+  // Handle CSS animation end - cleaner than JavaScript timers
+  const handleAnimationEnd = () => {
+    if (fadeState === "fading") {
+      setFadeState("hidden");
+    }
+  };
 
   // Don't render if hidden
   if (fadeState === "hidden") {
@@ -103,6 +148,7 @@ export function DemandRow({
         className={`flex items-center gap-3 py-1.5 px-2.5 rounded transition-opacity ${
           item.isCompleted ? "row-completed bg-slate-900/50" : "bg-slate-900/80"
         } ${showFadeAnimation ? "fade-out" : ""}`}
+        onAnimationEnd={handleAnimationEnd}
       >
         {/* Keeplist name - 50% wider (w-36 instead of w-24) */}
         <span className="text-xs text-slate-500 w-36 truncate flex-shrink-0">
@@ -133,7 +179,7 @@ export function DemandRow({
         {/* Compact controls - larger buttons with more spacing */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <button
-            onClick={() => updateItemQty(keeplistId, item.itemId, -1)}
+            onClick={handleDecrement}
             disabled={item.qtyOwned === 0}
             tabIndex={decrementTabIndex}
             className="p-1.5 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -144,7 +190,7 @@ export function DemandRow({
           </button>
 
           <button
-            onClick={() => updateItemQty(keeplistId, item.itemId, 1)}
+            onClick={handleIncrement}
             tabIndex={incrementTabIndex}
             className="p-1.5 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
             title="Increase quantity"
@@ -154,7 +200,7 @@ export function DemandRow({
           </button>
 
           <button
-            onClick={() => completeItem(keeplistId, item.itemId)}
+            onClick={handleComplete}
             disabled={item.isCompleted}
             tabIndex={completeTabIndex}
             className={`p-1.5 rounded transition-colors ${
@@ -182,6 +228,7 @@ export function DemandRow({
       className={`rounded-lg transition-opacity ${
         item.isCompleted ? "row-completed bg-slate-800/50" : "bg-slate-800"
       } ${showFadeAnimation ? "fade-out" : ""}`}
+      onAnimationEnd={handleAnimationEnd}
     >
       {/* Top row: Keeplist name and quantity */}
       <div className="flex items-center justify-between px-3 pt-2">
@@ -212,7 +259,7 @@ export function DemandRow({
         {/* Controls - larger touch targets for mobile */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            onClick={() => updateItemQty(keeplistId, item.itemId, -1)}
+            onClick={handleDecrement}
             disabled={item.qtyOwned === 0}
             tabIndex={decrementTabIndex}
             className="p-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 active:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -223,7 +270,7 @@ export function DemandRow({
           </button>
 
           <button
-            onClick={() => updateItemQty(keeplistId, item.itemId, 1)}
+            onClick={handleIncrement}
             tabIndex={incrementTabIndex}
             className="p-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 active:bg-slate-500 transition-colors"
             title="Increase quantity"
@@ -233,7 +280,7 @@ export function DemandRow({
           </button>
 
           <button
-            onClick={() => completeItem(keeplistId, item.itemId)}
+            onClick={handleComplete}
             disabled={item.isCompleted}
             tabIndex={completeTabIndex}
             className={`p-2 rounded-lg transition-colors ${
@@ -254,4 +301,4 @@ export function DemandRow({
       </div>
     </div>
   );
-}
+});

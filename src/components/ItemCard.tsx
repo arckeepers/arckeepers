@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { DemandRow } from "./DemandRow";
 import { getItemImage, type RequiredItem, type KeeplistItem } from "../types";
 import { useAppStore } from "../store/useAppStore";
 
-/** Total fade duration: delay + animation time (in ms) */
+/** Fade timing - delay before fade starts */
 const FADE_DELAY_MS = 500;
-const FADE_ANIMATION_MS = 500;
 
 interface DemandInfo {
   keeplistId: string;
@@ -20,7 +19,7 @@ interface ItemCardProps {
   itemIndex: number;
 }
 
-export function ItemCard({
+export const ItemCard = memo(function ItemCard({
   item,
   demands,
   showCompleted,
@@ -37,6 +36,9 @@ export function ItemCard({
   // Should this card be hidden? (all complete and not showing completed)
   const shouldHide = allCompleted && !showCompleted;
 
+  // Track previous shouldHide value to detect transitions
+  const prevShouldHideRef = useRef(shouldHide);
+
   // Track fade state - initialize to 'hidden' if already completed (prevents flicker on load)
   const [fadeState, setFadeState] = useState<"visible" | "fading" | "hidden">(
     () => (shouldHide ? "hidden" : "visible")
@@ -49,20 +51,10 @@ export function ItemCard({
     return sum + remaining;
   }, 0);
 
-  // Handle state transitions during render (outside effect to avoid lint warnings)
-  // Reset to visible when shouldHide becomes false
-  if (!shouldHide && fadeState !== "visible") {
-    setFadeState("visible");
-  }
-  // When animations disabled, hide immediately (no fade)
-  if (shouldHide && !animationsEnabled && fadeState !== "hidden") {
-    setFadeState("hidden");
-  }
-
-  // Handle fade-out timing with JavaScript timers (only when animations enabled)
+  // Handle fade state transitions
   useEffect(() => {
-    // Skip if animations disabled (handled synchronously above)
-    if (!animationsEnabled) return;
+    const prevShouldHide = prevShouldHideRef.current;
+    prevShouldHideRef.current = shouldHide;
 
     // Clear any existing timer
     if (fadeTimerRef.current) {
@@ -70,15 +62,30 @@ export function ItemCard({
       fadeTimerRef.current = null;
     }
 
-    if (shouldHide && fadeState === "visible") {
-      // Start fade after delay
-      fadeTimerRef.current = setTimeout(() => {
-        setFadeState("fading");
-        // After animation completes, hide the element
+    // Transition: was hiding -> now showing (user toggled "show completed")
+    if (prevShouldHide && !shouldHide) {
+      // Use microtask to avoid synchronous setState in effect
+      queueMicrotask(() => setFadeState("visible"));
+      return;
+    }
+
+    // Transition: was showing -> now hiding
+    if (!prevShouldHide && shouldHide) {
+      if (!animationsEnabled) {
+        // No animation - hide immediately (use microtask)
+        queueMicrotask(() => setFadeState("hidden"));
+      } else {
+        // Start fade after delay
         fadeTimerRef.current = setTimeout(() => {
-          setFadeState("hidden");
-        }, FADE_ANIMATION_MS);
-      }, FADE_DELAY_MS);
+          setFadeState("fading");
+        }, FADE_DELAY_MS);
+      }
+      return;
+    }
+
+    // Already hiding and animations just got disabled
+    if (shouldHide && !animationsEnabled && fadeState !== "hidden") {
+      queueMicrotask(() => setFadeState("hidden"));
     }
 
     return () => {
@@ -86,7 +93,14 @@ export function ItemCard({
         clearTimeout(fadeTimerRef.current);
       }
     };
-  }, [shouldHide, fadeState, animationsEnabled]);
+  }, [shouldHide, animationsEnabled, fadeState]);
+
+  // Handle CSS animation end - cleaner than JavaScript timers
+  const handleAnimationEnd = () => {
+    if (fadeState === "fading") {
+      setFadeState("hidden");
+    }
+  };
 
   // Don't render if hidden
   if (fadeState === "hidden") {
@@ -123,6 +137,7 @@ export function ItemCard({
       className={`bg-slate-800/80 rounded-lg overflow-hidden ${
         showFadeAnimation ? "fade-out" : ""
       }`}
+      onAnimationEnd={handleAnimationEnd}
     >
       {/* Desktop: horizontal layout */}
       <div className="hidden md:flex items-stretch p-2 gap-3">
@@ -242,4 +257,4 @@ export function ItemCard({
       </div>
     </div>
   );
-}
+});

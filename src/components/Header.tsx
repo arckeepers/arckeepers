@@ -12,6 +12,8 @@ import {
 import { useAppStore } from "../store/useAppStore";
 import { KeeplistSelector } from "./KeeplistSelector";
 import { UserKeeplistEditor } from "./UserKeeplistEditor";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { useConfirmDialog } from "../hooks/useConfirmDialog";
 
 type KeeplistPanelTab = "select" | "manage";
 
@@ -51,7 +53,9 @@ export function Header() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [keeplistPanelOpen, setKeeplistPanelOpen] = useState(false);
   const [keeplistTab, setKeeplistTab] = useState<KeeplistPanelTab>("select");
+  const [importError, setImportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { confirm, dialogProps } = useConfirmDialog();
   const {
     settings,
     setShowCompleted,
@@ -81,11 +85,16 @@ export function Header() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const content = event.target?.result as string;
       const success = importData(content);
       if (!success) {
-        alert("Failed to import data. Please check the file format.");
+        setImportError("Failed to import data. Please check the file format.");
+        // Clear error after 5 seconds
+        setTimeout(() => setImportError(null), 5000);
+      } else {
+        setImportError(null);
+        setSettingsOpen(false);
       }
     };
     reader.readAsText(file);
@@ -96,8 +105,15 @@ export function Header() {
     }
   };
 
-  const handleReset = () => {
-    if (confirm("Reset all data to defaults? This cannot be undone.")) {
+  const handleReset = async () => {
+    setSettingsOpen(false);
+    const confirmed = await confirm({
+      title: "Reset to Defaults",
+      message: "Reset all data to defaults? This will clear your progress and cannot be undone.",
+      confirmLabel: "Reset",
+      variant: "danger",
+    });
+    if (confirmed) {
       resetToDefaults();
     }
   };
@@ -219,15 +235,21 @@ export function Header() {
                     <hr className="border-slate-600" />
 
                     <button
-                      onClick={() => {
-                        handleReset();
-                        setSettingsOpen(false);
-                      }}
+                      onClick={handleReset}
                       className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-slate-600 rounded-b-lg"
                     >
                       <RotateCcw className="w-4 h-4" />
                       Reset to Defaults
                     </button>
+
+                    {importError && (
+                      <>
+                        <hr className="border-slate-600" />
+                        <div className="px-4 py-2 text-sm text-red-400 bg-red-900/20">
+                          {importError}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </>
               )}
@@ -295,6 +317,9 @@ export function Header() {
           </>
         )}
       </header>
+
+      {/* Confirm Dialog */}
+      {dialogProps && <ConfirmDialog {...dialogProps} />}
     </>
   );
 }

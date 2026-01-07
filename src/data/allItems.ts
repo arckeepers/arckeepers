@@ -2597,6 +2597,23 @@ export const itemsById = new Map<string, RequiredItem>(
   allItems.map((item) => [item.id, item])
 );
 
-// Get item by ID
+// Get item by ID (returns undefined if not found)
 export const getItemById = (id: string): RequiredItem | undefined =>
   itemsById.get(id);
+
+// Get item by ID with fallback for unknown items
+// Creates a placeholder item if the ID is not found
+export const getItemByIdWithFallback = (id: string): RequiredItem => {
+  const item = itemsById.get(id);
+  if (item) return item;
+
+  // Create a placeholder for unknown items (display the ID as name)
+  return {
+    id,
+    name: id
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" "),
+    rarity: "Common",
+  };
+};

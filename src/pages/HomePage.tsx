@@ -4,26 +4,8 @@ import { SearchBar } from "../components/SearchBar";
 import { Intro } from "../components/Intro";
 import { ItemCard } from "../components/ItemCard";
 import { useAppStore } from "../store/useAppStore";
-import { allItems } from "../data/allItems";
-import type { RequiredItem, KeeplistItem } from "../types";
-
-// Build items lookup map
-const itemsMap = new Map<string, RequiredItem>(
-  allItems.map((item) => [item.id, item])
-);
-
-// Get item by ID, with fallback to creating a placeholder for unknown items
-function getItemById(itemId: string): RequiredItem {
-  const item = itemsMap.get(itemId);
-  if (item) return item;
-
-  // Create a placeholder for unknown items (display the ID as name)
-  return {
-    id: itemId,
-    name: itemId.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
-    rarity: "Common",
-  };
-}
+import { getItemByIdWithFallback } from "../data/allItems";
+import type { KeeplistItem, RequiredItem } from "../types";
 
 interface DemandInfo {
   keeplistId: string;
@@ -68,7 +50,7 @@ export function HomePage() {
     // Convert to array with item metadata
     const result: ItemWithDemands[] = [];
     for (const [itemId, demands] of demandMap) {
-      const item = getItemById(itemId);
+      const item = getItemByIdWithFallback(itemId);
       result.push({ item, demands });
     }
 

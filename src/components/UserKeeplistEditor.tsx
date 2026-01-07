@@ -1,17 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Plus, Trash2, Search, ChevronDown, ChevronRight, X } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
-import { allItems } from "../data/allItems";
-import type { RequiredItem } from "../types";
-
-// Build items lookup map
-const itemsMap = new Map<string, RequiredItem>(
-  allItems.map((item) => [item.id, item])
-);
-
-function getItemById(itemId: string): RequiredItem | undefined {
-  return itemsMap.get(itemId);
-}
+import { allItems, getItemByIdWithFallback } from "../data/allItems";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { useConfirmDialog } from "../hooks/useConfirmDialog";
 
 interface UserKeeplistEditorProps {
   onClose?: () => void;
@@ -26,6 +18,7 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
   const updateKeeplistItemQty = useAppStore((state) => state.updateKeeplistItemQty);
 
   const userKeeplists = keeplists.filter((kl) => !kl.isSystem);
+  const { confirm, dialogProps } = useConfirmDialog();
 
   const [newListName, setNewListName] = useState("");
   const [expandedLists, setExpandedLists] = useState<Set<string>>(
@@ -60,14 +53,30 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
     }
   }, [highlightedIndex]);
 
+  const [createError, setCreateError] = useState<string | null>(null);
+
   const handleCreateList = () => {
     if (!newListName.trim()) return;
     const id = createUserKeeplist(newListName);
     if (id) {
       setExpandedLists((prev) => new Set([...prev, id]));
       setNewListName("");
+      setCreateError(null);
     } else {
-      alert("A keeplist with this name already exists");
+      setCreateError("A keeplist with this name already exists");
+    }
+  };
+
+  const handleDeleteKeeplist = async (keeplistId: string, keeplistName: string) => {
+    const confirmed = await confirm({
+      title: "Delete Keeplist",
+      message: `Are you sure you want to delete "${keeplistName}"? This action cannot be undone.`,
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      variant: "danger",
+    });
+    if (confirmed) {
+      deleteUserKeeplist(keeplistId);
     }
   };
 
@@ -135,23 +144,33 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
       </p>
 
       {/* Create new keeplist */}
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={newListName}
-          onChange={(e) => setNewListName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleCreateList()}
-          placeholder="New keeplist name..."
-          className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button
-          onClick={handleCreateList}
-          disabled={!newListName.trim()}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-lg transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Create
-        </button>
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newListName}
+            onChange={(e) => {
+              setNewListName(e.target.value);
+              setCreateError(null);
+            }}
+            onKeyDown={(e) => e.key === "Enter" && handleCreateList()}
+            placeholder="New keeplist name..."
+            className={`flex-1 px-3 py-2 bg-slate-800 border rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              createError ? "border-red-500" : "border-slate-700"
+            }`}
+          />
+          <button
+            onClick={handleCreateList}
+            disabled={!newListName.trim()}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-lg transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Create
+          </button>
+        </div>
+        {createError && (
+          <p className="text-sm text-red-400">{createError}</p>
+        )}
       </div>
 
       {/* User keeplists */}
@@ -183,11 +202,7 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
                   {keeplist.items.length} items
                 </span>
                 <button
-                  onClick={() => {
-                    if (confirm(`Delete "${keeplist.name}"?`)) {
-                      deleteUserKeeplist(keeplist.id);
-                    }
-                  }}
+                  onClick={() => handleDeleteKeeplist(keeplist.id, keeplist.name)}
                   className="p-1 text-slate-500 hover:text-red-400 transition-colors"
                   title="Delete keeplist"
                 >
@@ -199,11 +214,7 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
               {expandedLists.has(keeplist.id) && (
                 <div className="px-3 pb-3 space-y-2">
                   {keeplist.items.map((item) => {
-                    const itemData = getItemById(item.itemId) || {
-                      id: item.itemId,
-                      name: item.itemId.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
-                      rarity: "Common" as const,
-                    };
+                    const itemData = getItemByIdWithFallback(item.itemId);
 
                     return (
                       <div
@@ -339,6 +350,9 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
           </button>
         </div>
       )}
+
+      {/* Confirm Dialog */}
+      {dialogProps && <ConfirmDialog {...dialogProps} />}
     </div>
   );
 }

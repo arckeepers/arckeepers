@@ -51,7 +51,7 @@ export function Intro() {
           <p>
             <strong className="text-slate-100">Allocated Inventory:</strong>{" "}
             Items are tracked per-list, e.g. Leaper Pulse Units for workbenches,
-            quests and projects are tracked separately
+            quests and projects are tracked separately.
           </p>
 
           <p>

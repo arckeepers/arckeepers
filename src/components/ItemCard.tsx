@@ -12,9 +12,10 @@ interface ItemCardProps {
   item: RequiredItem;
   demands: DemandInfo[];
   showCompleted: boolean;
+  itemIndex: number;
 }
 
-export function ItemCard({ item, demands, showCompleted }: ItemCardProps) {
+export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardProps) {
   const [shouldFadeOut, setShouldFadeOut] = useState(false);
 
   // Check if all demands are completed
@@ -96,13 +97,15 @@ export function ItemCard({ item, demands, showCompleted }: ItemCardProps) {
 
         {/* Right: Keeplist demand rows stacked */}
         <div className="flex-1 flex flex-col justify-center gap-1 min-w-0">
-          {visibleDemands.map((demand) => (
+          {visibleDemands.map((demand, demandIndex) => (
             <DemandRow
               key={`${demand.keeplistId}-${demand.item.itemId}`}
               keeplistId={demand.keeplistId}
               keeplistName={demand.keeplistName}
               item={demand.item}
               compact
+              itemIndex={itemIndex}
+              demandIndex={demandIndex}
             />
           ))}
         </div>

@@ -115,12 +115,13 @@ export function HomePage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {visibleItems.map((entry) => (
+            {visibleItems.map((entry, itemIndex) => (
               <ItemCard
                 key={entry.item.id}
                 item={entry.item}
                 demands={entry.demands}
                 showCompleted={settings.showCompleted}
+                itemIndex={itemIndex}
               />
             ))}
           </div>

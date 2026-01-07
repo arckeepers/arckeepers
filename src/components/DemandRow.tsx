@@ -7,9 +7,21 @@ interface DemandRowProps {
   keeplistName: string;
   item: KeeplistItem;
   compact?: boolean;
+  itemIndex?: number;
+  demandIndex?: number;
 }
 
-export function DemandRow({ keeplistId, keeplistName, item, compact = false }: DemandRowProps) {
+export function DemandRow({ keeplistId, keeplistName, item, compact = false, itemIndex = 0, demandIndex = 0 }: DemandRowProps) {
+  // Calculate tabIndex for custom tab order:
+  // 1. Search box (tabIndex=1)
+  // 2. All + buttons (100-9999)
+  // 3. All ✓ buttons (10000-19999)
+  // 4. All - buttons (20000-29999)
+  // 5. Clear button (tabIndex=30000)
+  const baseIndex = itemIndex * 100 + demandIndex;
+  const incrementTabIndex = 100 + baseIndex;
+  const completeTabIndex = 10000 + baseIndex;
+  const decrementTabIndex = 20000 + baseIndex;
   const { updateItemQty, completeItem } = useAppStore();
 
   const progressPercent =
@@ -53,6 +65,7 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false }: D
           <button
             onClick={() => updateItemQty(keeplistId, item.itemId, -1)}
             disabled={item.qtyOwned === 0}
+            tabIndex={decrementTabIndex}
             className="p-1.5 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="Decrease quantity"
           >
@@ -61,6 +74,7 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false }: D
 
           <button
             onClick={() => updateItemQty(keeplistId, item.itemId, 1)}
+            tabIndex={incrementTabIndex}
             className="p-1.5 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
             title="Increase quantity"
           >
@@ -70,6 +84,7 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false }: D
           <button
             onClick={() => completeItem(keeplistId, item.itemId)}
             disabled={item.isCompleted}
+            tabIndex={completeTabIndex}
             className={`p-1.5 rounded transition-colors ${
               item.isCompleted
                 ? "bg-green-600 text-white cursor-default"

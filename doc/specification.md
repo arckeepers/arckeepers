@@ -5,9 +5,10 @@
 **Arc Keepers** is a Progressive Web App (PWA) companion for the game _ARC Raiders_. It helps players track "Loot Items" needed for various game goals (crafting, quests, upgrades).
 
 - **Goal:** A "to-do list" for loot. Users see what they need, track what they have picked up, and hide items once requirements are met.
-- **Platform:** Web / PWA (GitHub Pages). Responsive design for desktop and mobile.
+- **Platform:** Web / PWA (GitHub Pages). Responsive design for desktop and mobile. Installable as a standalone app.
 - **Privacy:** No backend. All data persists in browser `localStorage`.
 - **UX Priority:** Fast keyboard navigation, dark mode, high-density information. Touch-friendly on mobile.
+- **Offline Support:** Service worker caches app assets and item images for offline use.
 
 ## 2. Technical Stack
 
@@ -17,6 +18,11 @@
 
 - **State Management:** **Zustand**.
 - Middleware: `persist` (for LocalStorage).
+
+- **PWA:** `vite-plugin-pwa` with Workbox.
+- Service worker for offline caching.
+- Web App Manifest for installability.
+- Runtime caching for MetaForge CDN images (30-day cache).
 
 - **Data Parsing:** `papaparse` (for CSV ingestion).
 - **Icons:** `lucide-react`.

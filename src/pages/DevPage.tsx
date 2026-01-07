@@ -11,7 +11,8 @@ export function DevPage() {
   const [progress, setProgress] = useState({ current: 0, total: 0 });
 
   // Map API rarity to our Rarity type
-  const mapRarity = (apiRarity: string): Rarity => {
+  const mapRarity = (apiRarity: string | null | undefined): Rarity => {
+    if (!apiRarity) return "Common";
     const normalized = apiRarity.toLowerCase();
     if (normalized === "common") return "Common";
     if (normalized === "uncommon") return "Uncommon";
@@ -22,11 +23,17 @@ export function DevPage() {
   };
 
   // Fetch all items from the API (paginated)
+  // In development, use Vite proxy to avoid CORS. In production, this won't work.
   const fetchAllItems = async () => {
     setLoading(true);
     setError(null);
     setItems([]);
     setProgress({ current: 0, total: 0 });
+
+    // Use proxy in development to avoid CORS
+    const apiBase = import.meta.env.DEV
+      ? "/api/metaforge/arc-raiders/items"
+      : "https://metaforge.app/api/arc-raiders/items";
 
     try {
       const allItems: RequiredItem[] = [];
@@ -36,7 +43,7 @@ export function DevPage() {
 
       while (hasMore) {
         const response = await fetch(
-          `https://metaforge.app/api/arc-raiders/items?page=${page}&limit=${limit}`
+          `${apiBase}?page=${page}&limit=${limit}`
         );
 
         if (!response.ok) {
@@ -206,6 +213,20 @@ export function DevPage() {
               )}
             </div>
           )}
+        </section>
+
+        {/* CLI Alternative */}
+        <section className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
+          <h2 className="text-lg font-semibold mb-4">CLI Alternative</h2>
+          <p className="text-sm text-slate-400 mb-4">
+            If you encounter CORS errors in production, use the command-line tool instead:
+          </p>
+          <div className="bg-slate-900 rounded-lg p-3 font-mono text-sm">
+            <code className="text-green-400">npm run fetch-items</code>
+          </div>
+          <p className="text-xs text-slate-500 mt-2">
+            This fetches all items and saves them to <code>src/data/allItems.ts</code> and <code>src/data/items.csv</code>
+          </p>
         </section>
 
         {/* API Info */}

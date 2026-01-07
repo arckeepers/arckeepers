@@ -12,6 +12,11 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
   // Alpha-hijack: capture a-z keys globally and focus search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't hijack if any modifier except Shift is held (allow Ctrl+C, Cmd+R, etc.)
+      if (e.ctrlKey || e.altKey || e.metaKey) {
+        return;
+      }
+
       // Only capture single letter keys a-z
       if (e.key.length === 1 && /^[a-zA-Z]$/.test(e.key)) {
         // Don't interfere if user is typing in an input or textarea

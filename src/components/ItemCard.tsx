@@ -20,6 +20,12 @@ export function ItemCard({ item, demands, showCompleted }: ItemCardProps) {
   // Check if all demands are completed
   const allCompleted = demands.every((d) => d.item.isCompleted);
 
+  // Calculate total quantity still needed across all keeplists
+  const totalNeeded = demands.reduce((sum, d) => {
+    const remaining = Math.max(0, d.item.qtyRequired - d.item.qtyOwned);
+    return sum + remaining;
+  }, 0);
+
   // Trigger fade-out animation when all demands become completed
   useEffect(() => {
     if (allCompleted && !showCompleted) {
@@ -48,46 +54,58 @@ export function ItemCard({ item, demands, showCompleted }: ItemCardProps) {
     return null;
   }
 
-  const rarityClass = `rarity-${item.rarity.toLowerCase()}`;
+  const rarityBgClass = `rarity-bg-${item.rarity.toLowerCase()}`;
 
   return (
     <div
-      className={`bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden transition-all duration-500 ${
+      className={`bg-slate-800/80 rounded-lg overflow-hidden transition-all duration-500 ${
         allCompleted && !showCompleted ? "fade-out" : ""
       }`}
     >
-      {/* Card Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-slate-700">
-        {/* Item image */}
-        <img
-          src={getItemImage(item.id)}
-          alt={item.name}
-          className="w-12 h-12 rounded-lg bg-slate-700"
-        />
-
-        {/* Item name */}
-        <h3 className="flex-1 text-lg font-semibold text-slate-100">
-          {item.name}
-        </h3>
-
-        {/* Rarity badge */}
-        <span
-          className={`px-2 py-1 text-xs font-medium rounded border ${rarityClass}`}
-        >
-          {item.rarity}
-        </span>
-      </div>
-
-      {/* Demand Rows */}
-      <div className="p-3 space-y-2">
-        {visibleDemands.map((demand) => (
-          <DemandRow
-            key={`${demand.keeplistId}-${demand.item.itemId}`}
-            keeplistId={demand.keeplistId}
-            keeplistName={demand.keeplistName}
-            item={demand.item}
+      <div className="flex items-stretch p-2 gap-3">
+        {/* Left: Item icon with rarity border */}
+        <div className="relative flex-shrink-0">
+          <div
+            className={`absolute inset-y-0 left-0 w-1 rounded-l ${rarityBgClass}`}
           />
-        ))}
+          <div className="w-16 h-16 bg-slate-900 rounded overflow-hidden ml-1 relative">
+            <img
+              src={getItemImage(item.id)}
+              alt={item.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = `https://placehold.co/64x64/1e293b/64748b?text=${item.name.substring(0, 2).toUpperCase()}`;
+              }}
+            />
+            {/* Quantity badge */}
+            {totalNeeded > 0 && (
+              <div className="absolute bottom-0.5 right-0.5 bg-slate-900/90 px-1 py-0.5 rounded text-xs font-bold text-slate-100">
+                ×{totalNeeded}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Middle: Item name and rarity */}
+        <div className="flex-shrink-0 w-36 flex flex-col justify-center">
+          <h3 className="text-sm font-medium text-slate-100 leading-tight">{item.name}</h3>
+          <p className={`text-xs rarity-${item.rarity.toLowerCase()}`}>
+            {item.rarity} · {visibleDemands.length} list{visibleDemands.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+
+        {/* Right: Keeplist demand rows stacked */}
+        <div className="flex-1 flex flex-col justify-center gap-1 min-w-0">
+          {visibleDemands.map((demand) => (
+            <DemandRow
+              key={`${demand.keeplistId}-${demand.item.itemId}`}
+              keeplistId={demand.keeplistId}
+              keeplistName={demand.keeplistName}
+              item={demand.item}
+              compact
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

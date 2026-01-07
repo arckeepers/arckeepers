@@ -71,10 +71,12 @@ export function KeeplistBuilder() {
   const [newListName, setNewListName] = useState("");
   const [writeStatus, setWriteStatus] = useState<string | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [focusedQtyItem, setFocusedQtyItem] = useState<{ keeplistId: string; itemId: string } | null>(null);
+  const [focusedQtyItem, setFocusedQtyItem] = useState<{
+    keeplistId: string;
+    itemId: string;
+  } | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const qtyInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const isDev = import.meta.env.DEV;
 
@@ -102,10 +104,7 @@ export function KeeplistBuilder() {
   };
 
   // Handle keyboard navigation in autocomplete
-  const handleSearchKeyDown = (
-    e: React.KeyboardEvent,
-    keeplistId: string
-  ) => {
+  const handleSearchKeyDown = (e: React.KeyboardEvent, keeplistId: string) => {
     const selectableItems = getSelectableItems(keeplistId);
 
     switch (e.key) {
@@ -136,7 +135,9 @@ export function KeeplistBuilder() {
   // Scroll highlighted item into view
   useEffect(() => {
     if (listRef.current) {
-      const highlighted = listRef.current.querySelector('[data-highlighted="true"]');
+      const highlighted = listRef.current.querySelector(
+        '[data-highlighted="true"]'
+      );
       if (highlighted) {
         highlighted.scrollIntoView({ block: "nearest" });
       }
@@ -200,7 +201,7 @@ export function KeeplistBuilder() {
     });
   };
 
-  const addKeeperlist = () => {
+  const addKeeplist = () => {
     if (!newListName.trim()) return;
     const id = slugify(newListName);
     if (keeplists.some((kl) => kl.id === id)) {
@@ -215,7 +216,7 @@ export function KeeplistBuilder() {
     setNewListName("");
   };
 
-  const removeKeeperlist = (id: string) => {
+  const removeKeeplist = (id: string) => {
     if (!confirm("Remove this keeplist?")) return;
     setKeeplists((prev) => prev.filter((kl) => kl.id !== id));
   };
@@ -312,7 +313,12 @@ export function KeeplistBuilder() {
   };
 
   const resetToDefault = () => {
-    if (!confirm("Reset to the current systemKeeplists.ts? Unsaved changes will be lost.")) return;
+    if (
+      !confirm(
+        "Reset to the current systemKeeplists.ts? Unsaved changes will be lost."
+      )
+    )
+      return;
     setKeeplists(JSON.parse(JSON.stringify(systemKeeplists)));
   };
 
@@ -324,12 +330,12 @@ export function KeeplistBuilder() {
           type="text"
           value={newListName}
           onChange={(e) => setNewListName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addKeeperlist()}
+          onKeyDown={(e) => e.key === "Enter" && addKeeplist()}
           placeholder="New keeplist name..."
           className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
-          onClick={addKeeperlist}
+          onClick={addKeeplist}
           disabled={!newListName.trim()}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-lg transition-colors"
         >
@@ -362,7 +368,7 @@ export function KeeplistBuilder() {
                 {keeplist.items.length} items
               </span>
               <button
-                onClick={() => removeKeeperlist(keeplist.id)}
+                onClick={() => removeKeeplist(keeplist.id)}
                 className="p-1 text-slate-500 hover:text-red-400 transition-colors"
                 title="Remove keeplist"
               >
@@ -376,7 +382,10 @@ export function KeeplistBuilder() {
                 {keeplist.items.map((item) => {
                   const itemData = getItemById(item.itemId) || {
                     id: item.itemId,
-                    name: item.itemId.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+                    name: item.itemId
+                      .split("-")
+                      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                      .join(" "),
                     rarity: "Common" as const,
                   };
 
@@ -396,7 +405,10 @@ export function KeeplistBuilder() {
                         <input
                           ref={(el) => {
                             if (el) {
-                              qtyInputRefs.current.set(`${keeplist.id}-${item.itemId}`, el);
+                              qtyInputRefs.current.set(
+                                `${keeplist.id}-${item.itemId}`,
+                                el
+                              );
                             }
                           }}
                           type="number"
@@ -410,13 +422,24 @@ export function KeeplistBuilder() {
                             )
                           }
                           onKeyDown={(e) =>
-                            handleQtyKeyDown(e, keeplist.id, item.itemId, item.qtyRequired)
+                            handleQtyKeyDown(
+                              e,
+                              keeplist.id,
+                              item.itemId,
+                              item.qtyRequired
+                            )
                           }
-                          onFocus={() => setFocusedQtyItem({ keeplistId: keeplist.id, itemId: item.itemId })}
+                          onFocus={() =>
+                            setFocusedQtyItem({
+                              keeplistId: keeplist.id,
+                              itemId: item.itemId,
+                            })
+                          }
                           onBlur={() => {
                             // Only clear if this is still the focused item
                             setFocusedQtyItem((prev) =>
-                              prev?.keeplistId === keeplist.id && prev?.itemId === item.itemId
+                              prev?.keeplistId === keeplist.id &&
+                              prev?.itemId === item.itemId
                                 ? null
                                 : prev
                             );
@@ -447,7 +470,6 @@ export function KeeplistBuilder() {
                     <div className="relative mb-2">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                       <input
-                        ref={searchInputRef}
                         type="text"
                         value={itemSearch}
                         onChange={(e) => setItemSearch(e.target.value)}
@@ -457,7 +479,10 @@ export function KeeplistBuilder() {
                         className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
-                    <div ref={listRef} className="max-h-48 overflow-y-auto space-y-1">
+                    <div
+                      ref={listRef}
+                      className="max-h-48 overflow-y-auto space-y-1"
+                    >
                       {(() => {
                         let selectableIndex = 0;
 
@@ -469,12 +494,15 @@ export function KeeplistBuilder() {
                             ? -1
                             : selectableIndex++;
                           const isHighlighted =
-                            !isDisabled && currentSelectableIndex === highlightedIndex;
+                            !isDisabled &&
+                            currentSelectableIndex === highlightedIndex;
 
                           return (
                             <button
                               key={item.id}
-                              onClick={() => addItemToList(keeplist.id, item.id)}
+                              onClick={() =>
+                                addItemToList(keeplist.id, item.id)
+                              }
                               disabled={isDisabled}
                               data-highlighted={isHighlighted}
                               className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm rounded transition-colors ${
@@ -577,8 +605,8 @@ export function KeeplistBuilder() {
       {/* Help text */}
       <p className="text-xs text-slate-500">
         {isDev
-          ? 'In development mode, you can write directly to src/data/systemKeeplists.ts. Otherwise, download the file and replace it manually.'
-          : 'Download the file and replace src/data/systemKeeplists.ts manually, then rebuild.'}
+          ? "In development mode, you can write directly to src/data/systemKeeplists.ts. Otherwise, download the file and replace it manually."
+          : "Download the file and replace src/data/systemKeeplists.ts manually, then rebuild."}
       </p>
     </div>
   );

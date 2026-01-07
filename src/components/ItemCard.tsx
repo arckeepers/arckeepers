@@ -1,6 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DemandRow } from "./DemandRow";
 import { getItemImage, type RequiredItem, type KeeplistItem } from "../types";
+
+/** Total fade duration: delay + animation time (in ms) */
+const FADE_DELAY_MS = 500;
+const FADE_ANIMATION_MS = 500;
 
 interface DemandInfo {
   keeplistId: string;
@@ -15,11 +19,23 @@ interface ItemCardProps {
   itemIndex: number;
 }
 
-export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardProps) {
-  const [shouldFadeOut, setShouldFadeOut] = useState(false);
-
+export function ItemCard({
+  item,
+  demands,
+  showCompleted,
+  itemIndex,
+}: ItemCardProps) {
   // Check if all demands are completed
   const allCompleted = demands.every((d) => d.item.isCompleted);
+  
+  // Should this card fade out? (all complete and not showing completed)
+  const shouldFadeOut = allCompleted && !showCompleted;
+
+  // Track fade state - initialize to 'hidden' if already completed (prevents flicker on load)
+  const [fadeState, setFadeState] = useState<"visible" | "fading" | "hidden">(
+    () => (allCompleted && !showCompleted) ? "hidden" : "visible"
+  );
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Calculate total quantity still needed across all keeplists
   const totalNeeded = demands.reduce((sum, d) => {
@@ -27,31 +43,60 @@ export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardPr
     return sum + remaining;
   }, 0);
 
-  // Trigger fade-out animation when all demands become completed
-  useEffect(() => {
-    if (allCompleted && !showCompleted) {
-      // Wait 5 seconds before starting fade-out
-      const timer = setTimeout(() => {
-        setShouldFadeOut(true);
-      }, 5000);
-      return () => clearTimeout(timer);
-    } else {
-      setShouldFadeOut(false);
-    }
-  }, [allCompleted, showCompleted]);
+  // Reset fade state when conditions change (outside effect to avoid lint warning)
+  // This runs during render when shouldFadeOut becomes false
+  if (!shouldFadeOut && fadeState !== "visible") {
+    setFadeState("visible");
+  }
 
-  // Don't render if fading out and not showing completed
-  if (shouldFadeOut && !showCompleted) {
+  // Handle fade-out timing with JavaScript timers (more reliable than CSS animation events)
+  useEffect(() => {
+    // Clear any existing timer
+    if (fadeTimerRef.current) {
+      clearTimeout(fadeTimerRef.current);
+      fadeTimerRef.current = null;
+    }
+
+    if (shouldFadeOut && fadeState === "visible") {
+      // Start fade after delay
+      fadeTimerRef.current = setTimeout(() => {
+        setFadeState("fading");
+        // After animation completes, hide the element
+        fadeTimerRef.current = setTimeout(() => {
+          setFadeState("hidden");
+        }, FADE_ANIMATION_MS);
+      }, FADE_DELAY_MS);
+    }
+
+    return () => {
+      if (fadeTimerRef.current) {
+        clearTimeout(fadeTimerRef.current);
+      }
+    };
+  }, [shouldFadeOut, fadeState]);
+
+  // Don't render if hidden
+  if (fadeState === "hidden") {
     return null;
   }
 
-  // Filter demands based on showCompleted setting
-  const visibleDemands = showCompleted
-    ? demands
-    : demands.filter((d) => !d.item.isCompleted);
+  // We're "fading out" anytime we should fade (includes delay period AND animation)
+  // This ensures the card stays visible during the delay before animation starts
+  const isFadingOut = shouldFadeOut;
+  
+  // Only apply the CSS animation class when actually animating (not during delay)
+  const showFadeAnimation = fadeState === "fading";
 
-  // Don't render if no visible demands
-  if (visibleDemands.length === 0) {
+  // Always render all demands - DemandRow handles its own fade-out for individual rows
+  // This allows each row to animate independently when completed
+  const visibleDemands = demands;
+
+  // Count of non-completed demands for display purposes
+  const activeDemandsCount = demands.filter((d) => !d.item.isCompleted).length;
+  const displayCount = showCompleted ? demands.length : activeDemandsCount;
+
+  // Don't render if no demands at all, or if all hidden (all complete and not showing completed, after fade)
+  if (demands.length === 0 || (activeDemandsCount === 0 && !showCompleted && !isFadingOut)) {
     return null;
   }
 
@@ -59,8 +104,8 @@ export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardPr
 
   return (
     <div
-      className={`bg-slate-800/80 rounded-lg overflow-hidden transition-all duration-500 ${
-        allCompleted && !showCompleted ? "fade-out" : ""
+      className={`bg-slate-800/80 rounded-lg overflow-hidden ${
+        showFadeAnimation ? "fade-out" : ""
       }`}
     >
       {/* Desktop: horizontal layout */}
@@ -76,7 +121,11 @@ export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardPr
               alt={item.name}
               className="w-full h-full object-cover"
               onError={(e) => {
-                e.currentTarget.src = `https://placehold.co/64x64/1e293b/64748b?text=${item.name.substring(0, 2).toUpperCase()}`;
+                // Use inline SVG data URL as fallback (no external dependency)
+                const initials = item.name.substring(0, 2).toUpperCase();
+                e.currentTarget.src = `data:image/svg+xml,${encodeURIComponent(
+                  `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect fill="#1e293b" width="64" height="64"/><text x="32" y="38" font-family="system-ui,sans-serif" font-size="20" fill="#64748b" text-anchor="middle">${initials}</text></svg>`
+                )}`;
               }}
             />
             {/* Quantity badge */}
@@ -90,9 +139,12 @@ export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardPr
 
         {/* Middle: Item name and rarity */}
         <div className="flex-shrink-0 w-36 flex flex-col justify-center">
-          <h3 className="text-sm font-medium text-slate-100 leading-tight">{item.name}</h3>
+          <h3 className="text-sm font-medium text-slate-100 leading-tight">
+            {item.name}
+          </h3>
           <p className={`text-xs rarity-${item.rarity.toLowerCase()}`}>
-            {item.rarity} · {visibleDemands.length} list{visibleDemands.length !== 1 ? "s" : ""}
+            {item.rarity} · {displayCount} list
+            {displayCount !== 1 ? "s" : ""}
           </p>
         </div>
 
@@ -107,6 +159,7 @@ export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardPr
               compact
               itemIndex={itemIndex}
               demandIndex={demandIndex}
+              showCompleted={showCompleted}
             />
           ))}
         </div>
@@ -127,7 +180,11 @@ export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardPr
                 alt={item.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  e.currentTarget.src = `https://placehold.co/56x56/1e293b/64748b?text=${item.name.substring(0, 2).toUpperCase()}`;
+                  // Use inline SVG data URL as fallback (no external dependency)
+                  const initials = item.name.substring(0, 2).toUpperCase();
+                  e.currentTarget.src = `data:image/svg+xml,${encodeURIComponent(
+                    `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56"><rect fill="#1e293b" width="56" height="56"/><text x="28" y="34" font-family="system-ui,sans-serif" font-size="18" fill="#64748b" text-anchor="middle">${initials}</text></svg>`
+                  )}`;
                 }}
               />
               {/* Quantity badge */}
@@ -141,9 +198,12 @@ export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardPr
 
           {/* Item name and rarity */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-medium text-slate-100 leading-tight truncate">{item.name}</h3>
+            <h3 className="text-base font-medium text-slate-100 leading-tight truncate">
+              {item.name}
+            </h3>
             <p className={`text-xs rarity-${item.rarity.toLowerCase()}`}>
-              {item.rarity} · {visibleDemands.length} list{visibleDemands.length !== 1 ? "s" : ""}
+              {item.rarity} · {displayCount} list
+              {displayCount !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -159,6 +219,7 @@ export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardPr
               compact={false}
               itemIndex={itemIndex}
               demandIndex={demandIndex}
+              showCompleted={showCompleted}
             />
           ))}
         </div>

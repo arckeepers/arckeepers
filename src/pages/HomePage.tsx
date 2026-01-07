@@ -90,17 +90,10 @@ export function HomePage() {
     );
   }, [itemsWithDemands, searchQuery]);
 
-  // Further filter based on completion status
-  const visibleItems = useMemo(() => {
-    if (settings.showCompleted) {
-      return filteredItems;
-    }
-
-    // Only show items that have at least one incomplete demand
-    return filteredItems.filter((entry) =>
-      entry.demands.some((d) => !d.item.isCompleted)
-    );
-  }, [filteredItems, settings.showCompleted]);
+  // Note: We don't filter by completion status here anymore.
+  // ItemCard handles showing/hiding completed items with fade-out animation.
+  // This allows the fade animation to play before items are removed.
+  const visibleItems = filteredItems;
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -113,12 +106,8 @@ export function HomePage() {
           <div className="text-center py-12 text-slate-400">
             {searchQuery ? (
               <p>No items match "{searchQuery}"</p>
-            ) : settings.showCompleted ? (
-              <p>No items to display.</p>
             ) : (
-              <p>
-                All items complete! Toggle "Show Completed" to view them.
-              </p>
+              <p>No items to display.</p>
             )}
           </div>
         ) : (
@@ -137,7 +126,7 @@ export function HomePage() {
 
         {/* Item count footer */}
         <div className="mt-6 text-center text-sm text-slate-500">
-          Showing {visibleItems.length} of {itemsWithDemands.length} items
+          {itemsWithDemands.length} items tracked
         </div>
       </main>
     </div>

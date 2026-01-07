@@ -1,11 +1,7 @@
 import { Check, List } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 
-interface KeeplistSelectorProps {
-  onClose?: () => void;
-}
-
-export function KeeplistSelector({ onClose }: KeeplistSelectorProps) {
+export function KeeplistSelector() {
   const keeplists = useAppStore((state) => state.keeplists);
   const activeKeeplistIds = useAppStore((state) => state.settings.activeKeeplistIds);
   const toggleKeeplistActive = useAppStore((state) => state.toggleKeeplistActive);
@@ -113,17 +109,6 @@ export function KeeplistSelector({ onClose }: KeeplistSelectorProps) {
         <p className="text-sm text-slate-500 italic">
           No custom keeplists yet. Create one from the Keeplists menu.
         </p>
-      )}
-
-      {onClose && (
-        <div className="pt-2 border-t border-slate-700">
-          <button
-            onClick={onClose}
-            className="w-full py-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
-          >
-            Done
-          </button>
-        </div>
       )}
     </div>
   );

@@ -71,8 +71,9 @@ body {
   }
 }
 
+/* Fade-out animation - delay is handled by JavaScript for reliability */
 .fade-out {
-  animation: fadeOut 0.5s ease-out 5s forwards;
+  animation: fadeOut 0.5s ease-out forwards;
 }
 
 /* Progress bar */

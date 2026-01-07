@@ -14,11 +14,11 @@ interface AppStore {
   completeItem: (keeplistId: string, itemId: string) => void;
 
   // User keeplist management
-  createUserKeeperlist: (name: string) => string | null;
-  updateUserKeeperlist: (keeplistId: string, name: string) => void;
-  deleteUserKeeperlist: (keeplistId: string) => void;
-  addItemToKeeperlist: (keeplistId: string, itemId: string, qtyRequired: number) => void;
-  removeItemFromKeeperlist: (keeplistId: string, itemId: string) => void;
+  createUserKeeplist: (name: string) => string | null;
+  updateUserKeeplist: (keeplistId: string, name: string) => void;
+  deleteUserKeeplist: (keeplistId: string) => void;
+  addItemToKeeplist: (keeplistId: string, itemId: string, qtyRequired: number) => void;
+  removeItemFromKeeplist: (keeplistId: string, itemId: string) => void;
   updateKeeplistItemQty: (keeplistId: string, itemId: string, qtyRequired: number) => void;
 
   // Active keeplist management
@@ -208,7 +208,7 @@ export const useAppStore = create<AppStore>()(
       },
 
       // Create a new user keeplist
-      createUserKeeperlist: (name) => {
+      createUserKeeplist: (name) => {
         const id = slugify(name);
         const state = get();
         
@@ -217,7 +217,7 @@ export const useAppStore = create<AppStore>()(
           return null;
         }
 
-        const newKeeperlist: Keeplist = {
+        const newKeeplist: Keeplist = {
           id,
           name: name.trim(),
           isSystem: false,
@@ -225,7 +225,7 @@ export const useAppStore = create<AppStore>()(
         };
 
         set((state) => ({
-          keeplists: [...state.keeplists, newKeeperlist],
+          keeplists: [...state.keeplists, newKeeplist],
           // Auto-activate new keeplist
           settings: {
             ...state.settings,
@@ -239,7 +239,7 @@ export const useAppStore = create<AppStore>()(
       },
 
       // Update user keeplist name
-      updateUserKeeperlist: (keeplistId, name) => {
+      updateUserKeeplist: (keeplistId, name) => {
         set((state) => ({
           keeplists: state.keeplists.map((kl) =>
             kl.id === keeplistId && !kl.isSystem
@@ -250,7 +250,7 @@ export const useAppStore = create<AppStore>()(
       },
 
       // Delete user keeplist
-      deleteUserKeeperlist: (keeplistId) => {
+      deleteUserKeeplist: (keeplistId) => {
         set((state) => ({
           keeplists: state.keeplists.filter(
             (kl) => kl.id !== keeplistId || kl.isSystem
@@ -265,7 +265,7 @@ export const useAppStore = create<AppStore>()(
       },
 
       // Add item to a user keeplist
-      addItemToKeeperlist: (keeplistId, itemId, qtyRequired) => {
+      addItemToKeeplist: (keeplistId, itemId, qtyRequired) => {
         set((state) => ({
           keeplists: state.keeplists.map((kl) => {
             if (kl.id !== keeplistId || kl.isSystem) return kl;
@@ -282,7 +282,7 @@ export const useAppStore = create<AppStore>()(
       },
 
       // Remove item from a user keeplist
-      removeItemFromKeeperlist: (keeplistId, itemId) => {
+      removeItemFromKeeplist: (keeplistId, itemId) => {
         set((state) => ({
           keeplists: state.keeplists.map((kl) => {
             if (kl.id !== keeplistId || kl.isSystem) return kl;

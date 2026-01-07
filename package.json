@@ -1,7 +1,26 @@
 {
   "name": "arckeepers",
+  "version": "1.0.0",
+  "description": "ARC Raiders loot tracker - track items needed for crafting, quests, and upgrades",
+  "keywords": [
+    "arc-raiders",
+    "game-companion",
+    "loot-tracker",
+    "pwa",
+    "react",
+    "typescript"
+  ],
+  "homepage": "https://arckeepers.github.io/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arckeepers/arckeepers"
+  },
+  "bugs": {
+    "url": "https://github.com/arckeepers/arckeepers/issues"
+  },
+  "license": "Apache-2.0",
+  "author": "Arc Keepers Contributors",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

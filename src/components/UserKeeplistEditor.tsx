@@ -19,10 +19,10 @@ interface UserKeeplistEditorProps {
 
 export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
   const keeplists = useAppStore((state) => state.keeplists);
-  const createUserKeeperlist = useAppStore((state) => state.createUserKeeperlist);
-  const deleteUserKeeperlist = useAppStore((state) => state.deleteUserKeeperlist);
-  const addItemToKeeperlist = useAppStore((state) => state.addItemToKeeperlist);
-  const removeItemFromKeeperlist = useAppStore((state) => state.removeItemFromKeeperlist);
+  const createUserKeeplist = useAppStore((state) => state.createUserKeeplist);
+  const deleteUserKeeplist = useAppStore((state) => state.deleteUserKeeplist);
+  const addItemToKeeplist = useAppStore((state) => state.addItemToKeeplist);
+  const removeItemFromKeeplist = useAppStore((state) => state.removeItemFromKeeplist);
   const updateKeeplistItemQty = useAppStore((state) => state.updateKeeplistItemQty);
 
   const userKeeplists = keeplists.filter((kl) => !kl.isSystem);
@@ -62,7 +62,7 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
 
   const handleCreateList = () => {
     if (!newListName.trim()) return;
-    const id = createUserKeeperlist(newListName);
+    const id = createUserKeeplist(newListName);
     if (id) {
       setExpandedLists((prev) => new Set([...prev, id]));
       setNewListName("");
@@ -105,7 +105,7 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
       case "Enter":
         e.preventDefault();
         if (selectableItems[highlightedIndex]) {
-          addItemToKeeperlist(keeplistId, selectableItems[highlightedIndex].id, 1);
+          addItemToKeeplist(keeplistId, selectableItems[highlightedIndex].id, 1);
         }
         break;
       case "Escape":
@@ -185,7 +185,7 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
                 <button
                   onClick={() => {
                     if (confirm(`Delete "${keeplist.name}"?`)) {
-                      deleteUserKeeperlist(keeplist.id);
+                      deleteUserKeeplist(keeplist.id);
                     }
                   }}
                   className="p-1 text-slate-500 hover:text-red-400 transition-colors"
@@ -234,7 +234,7 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
                           />
                         </div>
                         <button
-                          onClick={() => removeItemFromKeeperlist(keeplist.id, item.itemId)}
+                          onClick={() => removeItemFromKeeplist(keeplist.id, item.itemId)}
                           className="p-1 text-slate-500 hover:text-red-400 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -277,7 +277,7 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
                                 key={item.id}
                                 onClick={() => {
                                   if (!isDisabled) {
-                                    addItemToKeeperlist(keeplist.id, item.id, 1);
+                                    addItemToKeeplist(keeplist.id, item.id, 1);
                                   }
                                 }}
                                 disabled={isDisabled}

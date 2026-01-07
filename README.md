@@ -1,73 +1,141 @@
-# React + TypeScript + Vite
+# Arc Keepers
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-Currently, two official plugins are available:
+**Arc Keepers** is a Progressive Web App (PWA) companion for the game [ARC Raiders](https://arcraiders.com). It helps players track loot items needed for expeditions, events and quests.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+🌐 **Live App:** [arckeepers.github.io](https://arckeepers.github.io/)
 
-## React Compiler
+## Introduction
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This app aims to answer the question, "Do I need to keep this item?"
+All the items that you might need to keep are arranged in to "keeplists".
+A keeplist tracks rare items that are needed for workbenches, events, quests, etc.
+This does **NOT** include very common items like Batteries - unless you need a very large number of them.
 
-## Expanding the ESLint configuration
+Hopefully this app will allow raiders to quickly rebuild after expeditions, or when new events are released.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Happy looting!
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**NOTE:** This app is open source! Fixes and features are very welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) to get started. The initial version was shamelessly vibe-coded over a couple of hours. We are more than happy to accept AI-developed pull requests as long as they are of reasonable quality.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Features
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- 📋 **Keeplist System** — Organize items into "keeplists" (Workbenches, Quests, Expeditions, etc.)
+- 🔢 **Allocated Inventory** — Track items per-list separately (e.g. Light bulbs for events + expeditions tracked separately)
+- ⌨️ **Keyboard-First** — Just start typing to search; efficient Tab navigation through controls
+- 📱 **Mobile-Friendly** — Responsive design with touch-friendly controls
+- 🌙 **Dark Mode** — Easy on the eyes during late-night gaming sessions
+- 📴 **Works Offline** — Full PWA support with cached item images
+- 🔒 **Privacy-First** — All data stored locally in your browser; no accounts, no tracking
+- 📤 **Import/Export** — Backup and restore your progress as JSON
+
+## Quick Start
+
+### Using the App
+
+1. Visit [arckeepers.github.io](https://arckeepers.github.io)
+2. Toggle which keeplists you want to track via the **Keeplists** button
+3. Use **+/-** buttons to update item quantities as you collect loot
+4. Hit **✓** to mark an item as complete
+5. Create custom keeplists in **Keeplists → My Keeplists**
+
+### Keyboard Shortcuts
+
+| Key      | Action                                                      |
+| -------- | ----------------------------------------------------------- |
+| `a-z`    | Focus search bar and start typing                           |
+| `Escape` | Clear search                                                |
+| `Tab`    | Navigate through controls (optimized order: +, ✓, -, clear) |
+
+## Development
+
+### Prerequisites
+
+- Node.js 18+
+- npm 9+
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/arckeepers/arckeepers.git
+cd arckeepers
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Available Scripts
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Command               | Description                               |
+| --------------------- | ----------------------------------------- |
+| `npm run dev`         | Start development server                  |
+| `npm run build`       | Build for production                      |
+| `npm run preview`     | Preview production build locally          |
+| `npm run lint`        | Run ESLint                                |
+| `npm run fetch-items` | Fetch latest item data from MetaForge API |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Project Structure
+
 ```
+src/
+├── components/       # React components
+│   ├── Header.tsx       # App header with settings
+│   ├── ItemCard.tsx     # Individual item display
+│   ├── DemandRow.tsx    # Keeplist demand row
+│   ├── SearchBar.tsx    # Search with alpha-hijack
+│   └── ...
+├── data/             # Static data
+│   ├── allItems.ts      # Item database (auto-generated)
+│   └── systemKeeplists.ts  # Default keeplists
+├── pages/            # Route pages
+│   ├── HomePage.tsx     # Main app view
+│   └── DevPage.tsx      # Developer tools
+├── store/            # Zustand state management
+│   └── useAppStore.ts   # App state and actions
+└── types/            # TypeScript types
+    └── index.ts
+```
+
+### Developer Tools
+
+Access developer tools at `/#/dev` for:
+
+- **Item Crawler** — Fetch latest items from MetaForge API
+- **Keeplist Builder** — Edit system keeplists
+
+## Data Sources
+
+Item data is sourced from [MetaForge](https://metaforge.app/arc-raiders). Images are loaded from their CDN and cached for offline use.
+
+## Tech Stack
+
+- **Framework:** React 19 + TypeScript
+- **Build:** Vite 7
+- **Styling:** Tailwind CSS 4
+- **State:** Zustand with localStorage persistence
+- **PWA:** vite-plugin-pwa with Workbox
+- **Icons:** Lucide React
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+This project is licensed under the Apache License 2.0 — see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Item data provided by [MetaForge](https://metaforge.app)
+- ARC Raiders is a trademark of Embark Studios
+
+---
+
+<p align="center">
+  Made with ❤️ for the ARC Raiders community
+</p>

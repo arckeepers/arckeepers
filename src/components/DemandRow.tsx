@@ -1,6 +1,11 @@
+import { useState, useEffect, useRef } from "react";
 import { Minus, Plus, Check } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import type { KeeplistItem } from "../types";
+
+/** Fade timing (shared with ItemCard) */
+const FADE_DELAY_MS = 500;
+const FADE_ANIMATION_MS = 500;
 
 interface DemandRowProps {
   keeplistId: string;
@@ -9,9 +14,29 @@ interface DemandRowProps {
   compact?: boolean;
   itemIndex?: number;
   demandIndex?: number;
+  showCompleted: boolean;
 }
 
-export function DemandRow({ keeplistId, keeplistName, item, compact = false, itemIndex = 0, demandIndex = 0 }: DemandRowProps) {
+export function DemandRow({
+  keeplistId,
+  keeplistName,
+  item,
+  compact = false,
+  itemIndex = 0,
+  demandIndex = 0,
+  showCompleted,
+}: DemandRowProps) {
+  // Should this row fade out? (completed and not showing completed items)
+  const shouldFadeOut = item.isCompleted && !showCompleted;
+
+  // All hooks must be called before any early returns
+  // Initialize to 'hidden' if already completed (prevents flicker on load)
+  const [fadeState, setFadeState] = useState<"visible" | "fading" | "hidden">(
+    () => shouldFadeOut ? "hidden" : "visible"
+  );
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { updateItemQty, completeItem } = useAppStore();
+
   // Calculate tabIndex for custom tab order:
   // 1. Search box (tabIndex=1)
   // 2. All + buttons (100-9999)
@@ -22,7 +47,41 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false, ite
   const incrementTabIndex = 100 + baseIndex;
   const completeTabIndex = 10000 + baseIndex;
   const decrementTabIndex = 20000 + baseIndex;
-  const { updateItemQty, completeItem } = useAppStore();
+
+  // Reset fade state when conditions change
+  if (!shouldFadeOut && fadeState !== "visible") {
+    setFadeState("visible");
+  }
+
+  // Handle fade-out timing
+  useEffect(() => {
+    if (fadeTimerRef.current) {
+      clearTimeout(fadeTimerRef.current);
+      fadeTimerRef.current = null;
+    }
+
+    if (shouldFadeOut && fadeState === "visible") {
+      fadeTimerRef.current = setTimeout(() => {
+        setFadeState("fading");
+        fadeTimerRef.current = setTimeout(() => {
+          setFadeState("hidden");
+        }, FADE_ANIMATION_MS);
+      }, FADE_DELAY_MS);
+    }
+
+    return () => {
+      if (fadeTimerRef.current) {
+        clearTimeout(fadeTimerRef.current);
+      }
+    };
+  }, [shouldFadeOut, fadeState]);
+
+  // Don't render if hidden
+  if (fadeState === "hidden") {
+    return null;
+  }
+
+  const showFadeAnimation = fadeState === "fading";
 
   const progressPercent =
     item.qtyRequired > 0
@@ -34,7 +93,7 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false, ite
       <div
         className={`flex items-center gap-3 py-1.5 px-2.5 rounded transition-opacity ${
           item.isCompleted ? "row-completed bg-slate-900/50" : "bg-slate-900/80"
-        }`}
+        } ${showFadeAnimation ? "fade-out" : ""}`}
       >
         {/* Keeplist name - 50% wider (w-36 instead of w-24) */}
         <span className="text-xs text-slate-500 w-36 truncate flex-shrink-0">
@@ -51,7 +110,9 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false, ite
 
         {/* Quantity display */}
         <span className="text-xs font-mono flex-shrink-0">
-          <span className={item.isCompleted ? "text-green-400" : "text-slate-200"}>
+          <span
+            className={item.isCompleted ? "text-green-400" : "text-slate-200"}
+          >
             {item.qtyOwned}
           </span>
           <span className="text-slate-600">/</span>
@@ -68,8 +129,9 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false, ite
             tabIndex={decrementTabIndex}
             className="p-1.5 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="Decrease quantity"
+            aria-label={`Decrease quantity for ${keeplistName}`}
           >
-            <Minus className="w-4 h-4" />
+            <Minus className="w-4 h-4" aria-hidden="true" />
           </button>
 
           <button
@@ -77,8 +139,9 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false, ite
             tabIndex={incrementTabIndex}
             className="p-1.5 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
             title="Increase quantity"
+            aria-label={`Increase quantity for ${keeplistName}`}
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4" aria-hidden="true" />
           </button>
 
           <button
@@ -91,8 +154,13 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false, ite
                 : "bg-slate-700 text-slate-300 hover:bg-green-600 hover:text-white"
             }`}
             title={item.isCompleted ? "Completed" : "Mark as complete"}
+            aria-label={
+              item.isCompleted
+                ? `${keeplistName} completed`
+                : `Mark ${keeplistName} as complete`
+            }
           >
-            <Check className="w-4 h-4" />
+            <Check className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -104,15 +172,15 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false, ite
     <div
       className={`rounded-lg transition-opacity ${
         item.isCompleted ? "row-completed bg-slate-800/50" : "bg-slate-800"
-      }`}
+      } ${showFadeAnimation ? "fade-out" : ""}`}
     >
       {/* Top row: Keeplist name and quantity */}
       <div className="flex items-center justify-between px-3 pt-2">
-        <span className="text-sm text-slate-400 truncate">
-          {keeplistName}
-        </span>
+        <span className="text-sm text-slate-400 truncate">{keeplistName}</span>
         <span className="text-sm font-mono">
-          <span className={item.isCompleted ? "text-green-400" : "text-slate-200"}>
+          <span
+            className={item.isCompleted ? "text-green-400" : "text-slate-200"}
+          >
             {item.qtyOwned}
           </span>
           <span className="text-slate-500"> / </span>
@@ -140,8 +208,9 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false, ite
             tabIndex={decrementTabIndex}
             className="p-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 active:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="Decrease quantity"
+            aria-label={`Decrease quantity for ${keeplistName}`}
           >
-            <Minus className="w-5 h-5" />
+            <Minus className="w-5 h-5" aria-hidden="true" />
           </button>
 
           <button
@@ -149,8 +218,9 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false, ite
             tabIndex={incrementTabIndex}
             className="p-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 active:bg-slate-500 transition-colors"
             title="Increase quantity"
+            aria-label={`Increase quantity for ${keeplistName}`}
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5" aria-hidden="true" />
           </button>
 
           <button
@@ -163,8 +233,13 @@ export function DemandRow({ keeplistId, keeplistName, item, compact = false, ite
                 : "bg-slate-700 text-slate-300 hover:bg-green-600 active:bg-green-500 hover:text-white"
             }`}
             title={item.isCompleted ? "Completed" : "Mark as complete"}
+            aria-label={
+              item.isCompleted
+                ? `${keeplistName} completed`
+                : `Mark ${keeplistName} as complete`
+            }
           >
-            <Check className="w-5 h-5" />
+            <Check className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
       </div>

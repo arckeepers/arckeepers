@@ -1,5 +1,14 @@
 import { useState, useRef } from "react";
-import { Settings, Download, Upload, RotateCcw, Eye, EyeOff, List, X } from "lucide-react";
+import {
+  Settings,
+  Download,
+  Upload,
+  RotateCcw,
+  Eye,
+  EyeOff,
+  List,
+  X,
+} from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { KeeplistSelector } from "./KeeplistSelector";
 import { UserKeeplistEditor } from "./UserKeeplistEditor";
@@ -11,9 +20,14 @@ export function Header() {
   const [keeplistPanelOpen, setKeeplistPanelOpen] = useState(false);
   const [keeplistTab, setKeeplistTab] = useState<KeeplistPanelTab>("select");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { settings, setShowCompleted, exportData, importData, resetToDefaults } =
-    useAppStore();
-  
+  const {
+    settings,
+    setShowCompleted,
+    exportData,
+    importData,
+    resetToDefaults,
+  } = useAppStore();
+
   const activeCount = settings.activeKeeplistIds.length;
 
   const handleExport = () => {
@@ -22,7 +36,9 @@ export function Header() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `arckeepers-backup-${new Date().toISOString().split("T")[0]}.json`;
+    a.download = `arckeepers-backup-${
+      new Date().toISOString().split("T")[0]
+    }.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -58,10 +74,10 @@ export function Header() {
       <div className="max-w-4xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold text-white">
-            AK
-          </div>
-          <h1 className="text-lg sm:text-xl font-semibold text-slate-50">Arc Keepers</h1>
+          <img src="/arc.svg" alt="Arc Keepers Logo" className="w-10 h-10" />
+          <h1 className="text-lg sm:text-xl font-semibold text-slate-50">
+            Arc Keepers
+          </h1>
         </div>
 
         {/* Controls */}
@@ -89,7 +105,11 @@ export function Header() {
                 ? "bg-blue-600 text-white"
                 : "bg-slate-700 text-slate-300 hover:bg-slate-600"
             }`}
-            title={settings.showCompleted ? "Hide completed items" : "Show completed items"}
+            title={
+              settings.showCompleted
+                ? "Hide completed items"
+                : "Show completed items"
+            }
           >
             {settings.showCompleted ? (
               <Eye className="w-4 h-4" />
@@ -176,7 +196,9 @@ export function Header() {
           <div className="fixed inset-x-4 top-20 bottom-4 md:inset-auto md:right-4 md:top-20 md:w-96 md:max-h-[calc(100vh-6rem)] bg-slate-800 rounded-xl shadow-2xl border border-slate-700 z-50 flex flex-col overflow-hidden">
             {/* Panel Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
-              <h2 className="text-lg font-semibold text-slate-100">Keeplists</h2>
+              <h2 className="text-lg font-semibold text-slate-100">
+                Keeplists
+              </h2>
               <button
                 onClick={() => setKeeplistPanelOpen(false)}
                 className="p-1 text-slate-400 hover:text-slate-200 transition-colors"

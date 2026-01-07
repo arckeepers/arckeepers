@@ -8,6 +8,13 @@
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --accent: #3b82f6;
+
+  /* Rarity colors */
+  --rarity-common: #9ca3af;
+  --rarity-uncommon: #4ade80;
+  --rarity-rare: #60a5fa;
+  --rarity-epic: #cf329a;
+  --rarity-legendary: #fbbf24;
 }
 
 body {
@@ -15,46 +22,51 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Rarity colors */
+/* Rarity text and border colors */
 .rarity-common {
-  @apply text-gray-400 border-gray-400;
+  color: var(--rarity-common);
+  border-color: var(--rarity-common);
 }
 
 .rarity-uncommon {
-  @apply text-green-400 border-green-400;
+  color: var(--rarity-uncommon);
+  border-color: var(--rarity-uncommon);
 }
 
 .rarity-rare {
-  @apply text-blue-400 border-blue-400;
+  color: var(--rarity-rare);
+  border-color: var(--rarity-rare);
 }
 
 .rarity-epic {
-  @apply text-purple-400 border-purple-400;
+  color: var(--rarity-epic);
+  border-color: var(--rarity-epic);
 }
 
 .rarity-legendary {
-  @apply text-amber-400 border-amber-400;
+  color: var(--rarity-legendary);
+  border-color: var(--rarity-legendary);
 }
 
 /* Rarity background colors for left border */
 .rarity-bg-common {
-  @apply bg-gray-500;
+  background-color: var(--rarity-common);
 }
 
 .rarity-bg-uncommon {
-  @apply bg-green-500;
+  background-color: var(--rarity-uncommon);
 }
 
 .rarity-bg-rare {
-  @apply bg-blue-500;
+  background-color: var(--rarity-rare);
 }
 
 .rarity-bg-epic {
-  @apply bg-purple-500;
+  background-color: var(--rarity-epic);
 }
 
 .rarity-bg-legendary {
-  @apply bg-amber-500;
+  background-color: var(--rarity-legendary);
 }
 
 /* Fade out animation for completed items */

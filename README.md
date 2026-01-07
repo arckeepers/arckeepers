@@ -110,7 +110,7 @@ Access developer tools at `/#/dev` for:
 
 ## Data Sources
 
-Item data is sourced from [MetaForge](https://metaforge.app/arc-raiders). Images are loaded from their CDN and cached for offline use.
+Item data and images are sourced from [MetaForge](https://metaforge.app/arc-raiders). A massive thank-you to them for their amazing resource.
 
 ## Tech Stack
 

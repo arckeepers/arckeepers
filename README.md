@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-**Arc Keepers** is a Progressive Web App (PWA) companion for the game [ARC Raiders](https://arcraiders.com). It helps players track loot items needed for expeditions, events and quests.
+**Arc Keepers** is a Progressive Web App (PWA) companion for the game [ARC Raiders](https://arcraiders.com). It helps players track loot items needed for expeditions, projects and quests.
 
 🌐 **Live App:** [arckeepers.github.io](https://arckeepers.github.io/)
 
@@ -10,7 +10,7 @@
 
 This app aims to answer the question, "Do I need to keep this item?"
 All the items that you might need to keep are arranged in to "keeplists".
-A keeplist tracks rare items that are needed for workbenches, events, quests, etc.
+A keeplist tracks rare items that are needed for workbenches, projects, quests, etc.
 This does **NOT** include very common items like Batteries - unless you need a very large number of them.
 
 Hopefully this app will allow raiders to quickly rebuild after expeditions, or when new events are released.
@@ -22,7 +22,7 @@ Happy looting!
 ## Features
 
 - 📋 **Keeplist System** — Organize items into "keeplists" (Workbenches, Quests, Expeditions, etc.)
-- 🔢 **Allocated Inventory** — Track items per-list separately (e.g. Light bulbs for events + expeditions tracked separately)
+- 🔢 **Allocated Inventory** — Track items per-list separately (e.g. Light bulbs for projects + expeditions tracked separately)
 - ⌨️ **Keyboard-First** — Just start typing to search; efficient Tab navigation through controls
 - 📱 **Mobile-Friendly** — Responsive design with touch-friendly controls
 - 🌙 **Dark Mode** — Easy on the eyes during late-night gaming sessions

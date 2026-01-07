@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { ArrowLeft, Download, Loader2, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import Papa from "papaparse";
 import type { ApiResponse, ApiItem, RequiredItem, Rarity } from "../types";
+
+// Lazy load KeeplistBuilder since it has a top-level await
+const KeeplistBuilder = lazy(() =>
+  import("../components/KeeplistBuilder").then((m) => ({
+    default: m.KeeplistBuilder,
+  }))
+);
 
 export function DevPage() {
   const [items, setItems] = useState<RequiredItem[]>([]);
@@ -213,6 +220,25 @@ export function DevPage() {
               )}
             </div>
           )}
+        </section>
+
+        {/* Keeplist Builder Section */}
+        <section className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
+          <h2 className="text-lg font-semibold mb-4">Keeplist Builder</h2>
+          <p className="text-sm text-slate-400 mb-4">
+            Build and maintain the system keeplists. Add/remove keeplists and items,
+            then download or write the updated <code>systemKeeplists.ts</code> file.
+          </p>
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center py-8 text-slate-500">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                Loading...
+              </div>
+            }
+          >
+            <KeeplistBuilder />
+          </Suspense>
         </section>
 
         {/* CLI Alternative */}

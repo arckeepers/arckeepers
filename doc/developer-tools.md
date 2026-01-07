@@ -41,6 +41,37 @@ The TypeScript module exports:
 - **Parameters:** `page`, `limit`
 - **Attribution:** Data provided by [MetaForge](https://metaforge.app/arc-raiders)
 
+## Keeplist Builder
+
+A visual tool for creating and maintaining system keeplists. Access via the `/dev` page.
+
+### Features
+
+- **View current keeplists** - Shows all system keeplists with their items and quantities
+- **Add/remove keeplists** - Create new lists or remove existing ones
+- **Add/remove items** - Search and add items from the item database to any list
+- **Edit quantities** - Adjust `qtyRequired` for each item
+- **Download file** - Export as `systemKeeplists.ts` to replace manually
+- **Write directly** - In development mode, write directly to `src/data/systemKeeplists.ts`
+
+### Usage
+
+1. Start the dev server: `npm run dev`
+2. Navigate to `http://localhost:5173/#/dev`
+3. Scroll to the **Keeplist Builder** section
+4. Make your changes (add lists, add items, edit quantities)
+5. Click **"Write to src/data/"** (dev mode) or **"Download systemKeeplists.ts"**
+
+> **Note:** The "Write to src/data/" button only appears in development mode and writes the file directly using a Vite dev server endpoint.
+
+### Item Search
+
+When adding items, the builder searches from:
+- `src/data/allItems.ts` (if you've run `npm run fetch-items`)
+- `src/data/dummyItems.ts` (fallback with 20 sample items)
+
+For the full item list, run `npm run fetch-items` first.
+
 ## Data Flow
 
 ```
@@ -54,16 +85,25 @@ MetaForge API
      ▼
 ┌─────────────────┐
 │ src/data/       │
-│ ├─ allItems.ts  │  ◄── Import in app
+│ ├─ allItems.ts  │  ◄── Import in app & Keeplist Builder
 │ └─ items.csv    │  ◄── External use
 └─────────────────┘
+
+┌─────────────────┐
+│Keeplist Builder │  (Browser)
+└─────────────────┘
+     │
+     ▼
+┌─────────────────────────┐
+│ src/data/               │
+│ └─ systemKeeplists.ts   │  ◄── Default keeplists for new users
+└─────────────────────────┘
 ```
 
 ## Future Tools
 
 The `/dev` page is designed to host additional developer tools:
 
-- **Keeplist Builder** - UI to create system keeplists (planned)
 - **Image Integrity Tester** - Validate item image URLs (planned)
 
 ## Updating Game Data

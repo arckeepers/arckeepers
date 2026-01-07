@@ -63,7 +63,8 @@ export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardPr
         allCompleted && !showCompleted ? "fade-out" : ""
       }`}
     >
-      <div className="flex items-stretch p-2 gap-3">
+      {/* Desktop: horizontal layout */}
+      <div className="hidden md:flex items-stretch p-2 gap-3">
         {/* Left: Item icon with rarity border */}
         <div className="relative flex-shrink-0">
           <div
@@ -104,6 +105,58 @@ export function ItemCard({ item, demands, showCompleted, itemIndex }: ItemCardPr
               keeplistName={demand.keeplistName}
               item={demand.item}
               compact
+              itemIndex={itemIndex}
+              demandIndex={demandIndex}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Mobile: vertical layout */}
+      <div className="md:hidden">
+        {/* Header with icon and item info */}
+        <div className="flex items-center gap-3 p-3">
+          {/* Item icon with rarity border */}
+          <div className="relative flex-shrink-0">
+            <div
+              className={`absolute inset-y-0 left-0 w-1 rounded-l ${rarityBgClass}`}
+            />
+            <div className="w-14 h-14 bg-slate-900 rounded overflow-hidden ml-1 relative">
+              <img
+                src={getItemImage(item.id)}
+                alt={item.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = `https://placehold.co/56x56/1e293b/64748b?text=${item.name.substring(0, 2).toUpperCase()}`;
+                }}
+              />
+              {/* Quantity badge */}
+              {totalNeeded > 0 && (
+                <div className="absolute bottom-0 right-0 bg-slate-900/90 px-1 py-0.5 rounded text-xs font-bold text-slate-100">
+                  ×{totalNeeded}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Item name and rarity */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-medium text-slate-100 leading-tight truncate">{item.name}</h3>
+            <p className={`text-xs rarity-${item.rarity.toLowerCase()}`}>
+              {item.rarity} · {visibleDemands.length} list{visibleDemands.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </div>
+
+        {/* Keeplist demand rows below */}
+        <div className="px-3 pb-3 space-y-2">
+          {visibleDemands.map((demand, demandIndex) => (
+            <DemandRow
+              key={`${demand.keeplistId}-${demand.item.itemId}`}
+              keeplistId={demand.keeplistId}
+              keeplistName={demand.keeplistName}
+              item={demand.item}
+              compact={false}
               itemIndex={itemIndex}
               demandIndex={demandIndex}
             />

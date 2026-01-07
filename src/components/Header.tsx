@@ -57,19 +57,19 @@ export function Header() {
     <header className="sticky top-0 z-50 bg-slate-800 border-b border-slate-700 px-4 py-3">
       <div className="max-w-4xl mx-auto flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold text-white">
             AK
           </div>
-          <h1 className="text-xl font-semibold text-slate-50">Arc Keepers</h1>
+          <h1 className="text-lg sm:text-xl font-semibold text-slate-50">Arc Keepers</h1>
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Keeplists Button */}
           <button
             onClick={() => setKeeplistPanelOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
+            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg text-sm bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors"
             title="Manage keeplists"
           >
             <List className="w-4 h-4" />
@@ -84,7 +84,7 @@ export function Header() {
           {/* Show Completed Toggle */}
           <button
             onClick={() => setShowCompleted(!settings.showCompleted)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg text-sm transition-colors ${
               settings.showCompleted
                 ? "bg-blue-600 text-white"
                 : "bg-slate-700 text-slate-300 hover:bg-slate-600"

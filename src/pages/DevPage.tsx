@@ -49,9 +49,7 @@ export function DevPage() {
       const limit = 100;
 
       while (hasMore) {
-        const response = await fetch(
-          `${apiBase}?page=${page}&limit=${limit}`
-        );
+        const response = await fetch(`${apiBase}?page=${page}&limit=${limit}`);
 
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
@@ -93,7 +91,9 @@ export function DevPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `arc-raiders-items-${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = `arc-raiders-items-${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -115,6 +115,26 @@ export function DevPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+        {/* Keeplist Builder Section */}
+        <section className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
+          <h2 className="text-lg font-semibold mb-4">Keeplist Builder</h2>
+          <p className="text-sm text-slate-400 mb-4">
+            Build and maintain the system keeplists. Add/remove keeplists and
+            items, then download or write the updated{" "}
+            <code>systemKeeplists.ts</code> file.
+          </p>
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center py-8 text-slate-500">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                Loading...
+              </div>
+            }
+          >
+            <KeeplistBuilder />
+          </Suspense>
+        </section>
+
         {/* Item Crawler Section */}
         <section className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
           <h2 className="text-lg font-semibold mb-4">Item Crawler</h2>
@@ -222,36 +242,20 @@ export function DevPage() {
           )}
         </section>
 
-        {/* Keeplist Builder Section */}
-        <section className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
-          <h2 className="text-lg font-semibold mb-4">Keeplist Builder</h2>
-          <p className="text-sm text-slate-400 mb-4">
-            Build and maintain the system keeplists. Add/remove keeplists and items,
-            then download or write the updated <code>systemKeeplists.ts</code> file.
-          </p>
-          <Suspense
-            fallback={
-              <div className="flex items-center justify-center py-8 text-slate-500">
-                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                Loading...
-              </div>
-            }
-          >
-            <KeeplistBuilder />
-          </Suspense>
-        </section>
-
         {/* CLI Alternative */}
         <section className="bg-slate-800/50 rounded-xl border border-slate-700 p-6">
           <h2 className="text-lg font-semibold mb-4">CLI Alternative</h2>
           <p className="text-sm text-slate-400 mb-4">
-            If you encounter CORS errors in production, use the command-line tool instead:
+            If you encounter CORS errors in production, use the command-line
+            tool instead:
           </p>
           <div className="bg-slate-900 rounded-lg p-3 font-mono text-sm">
             <code className="text-green-400">npm run fetch-items</code>
           </div>
           <p className="text-xs text-slate-500 mt-2">
-            This fetches all items and saves them to <code>src/data/allItems.ts</code> and <code>src/data/items.csv</code>
+            This fetches all items and saves them to{" "}
+            <code>src/data/allItems.ts</code> and{" "}
+            <code>src/data/items.csv</code>
           </p>
         </section>
 

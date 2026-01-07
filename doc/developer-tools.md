@@ -66,11 +66,9 @@ A visual tool for creating and maintaining system keeplists. Access via the `/de
 
 ### Item Search
 
-When adding items, the builder searches from:
-- `src/data/allItems.ts` (if you've run `npm run fetch-items`)
-- `src/data/dummyItems.ts` (fallback with 20 sample items)
+When adding items, the builder searches from `src/data/allItems.ts`.
 
-For the full item list, run `npm run fetch-items` first.
+> **Important:** Run `npm run fetch-items` first to populate the item database.
 
 ## Data Flow
 

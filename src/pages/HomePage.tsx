@@ -4,8 +4,26 @@ import { SearchBar } from "../components/SearchBar";
 import { Intro } from "../components/Intro";
 import { ItemCard } from "../components/ItemCard";
 import { useAppStore } from "../store/useAppStore";
-import { getItemById } from "../data/dummyItems";
+import { allItems } from "../data/allItems";
 import type { RequiredItem, KeeplistItem } from "../types";
+
+// Build items lookup map
+const itemsMap = new Map<string, RequiredItem>(
+  allItems.map((item) => [item.id, item])
+);
+
+// Get item by ID, with fallback to creating a placeholder for unknown items
+function getItemById(itemId: string): RequiredItem {
+  const item = itemsMap.get(itemId);
+  if (item) return item;
+
+  // Create a placeholder for unknown items (display the ID as name)
+  return {
+    id: itemId,
+    name: itemId.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+    rarity: "Common",
+  };
+}
 
 interface DemandInfo {
   keeplistId: string;
@@ -24,28 +42,26 @@ export function HomePage() {
 
   // Build aggregated item list with all demands
   const itemsWithDemands = useMemo(() => {
-    const itemMap = new Map<string, DemandInfo[]>();
+    const demandMap = new Map<string, DemandInfo[]>();
 
     // Collect all demands from all keeplists
     for (const keeplist of keeplists) {
       for (const keeplistItem of keeplist.items) {
-        const demands = itemMap.get(keeplistItem.itemId) || [];
+        const demands = demandMap.get(keeplistItem.itemId) || [];
         demands.push({
           keeplistId: keeplist.id,
           keeplistName: keeplist.name,
           item: keeplistItem,
         });
-        itemMap.set(keeplistItem.itemId, demands);
+        demandMap.set(keeplistItem.itemId, demands);
       }
     }
 
     // Convert to array with item metadata
     const result: ItemWithDemands[] = [];
-    for (const [itemId, demands] of itemMap) {
+    for (const [itemId, demands] of demandMap) {
       const item = getItemById(itemId);
-      if (item) {
-        result.push({ item, demands });
-      }
+      result.push({ item, demands });
     }
 
     // Sort alphabetically by item name

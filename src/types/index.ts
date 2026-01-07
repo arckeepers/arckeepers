@@ -65,7 +65,7 @@ export interface ApiResponse {
 
 // Helper to get item image placeholder
 export const getItemImage = (slug: string): string =>
-  `https://placehold.co/64x64/333/FFF?text=${slug.substring(0, 2).toUpperCase()}`;
+  `https://cdn.metaforge.app/arc-raiders/icons/${slug}.webp`;
 
 // Rarity color mapping
 export const rarityColors: Record<Rarity, string> = {

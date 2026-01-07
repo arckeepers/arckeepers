@@ -64,20 +64,11 @@ interface KeeplistItem {
 }
 ```
 
-### 3.3. Initial Dummy Data Generation
+### 3.3. Data Sources
 
-_Until the Dev Tools are used to populate real data, the AI must generate the following:_
+**Item Data:** Fetched from the MetaForge API using the Item Crawler dev tool (`npm run fetch-items`). Stored in `src/data/allItems.ts`.
 
-**1. Required Items (Generate ~20 diverse items):**
-
-- _Examples:_ Resin Canister, Optical Sensor, Synthetic Weave, Hydraulic Piston.
-
-**2. System Keeplists (Default State):**
-The app must initialize with exactly these three lists:
-
-1. **"Workbenches"**: Requirements for base building.
-2. **"Expedition 2"**: Specific items needed for a raid event.
-3. **"Quests"**: A consolidated bucket for _all_ quest items (to reduce UI clutter).
+**System Keeplists:** Maintained using the Keeplist Builder dev tool and stored in `src/data/systemKeeplists.ts`. The app ships with predefined keeplists (e.g., "Workbenches", "Expedition 2", "Flickering Flames").
 
 ## 4. Core Logic
 

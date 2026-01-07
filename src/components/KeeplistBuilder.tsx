@@ -9,8 +9,17 @@ import {
   Search,
 } from "lucide-react";
 import { systemKeeplists } from "../data/systemKeeplists";
-import { dummyItems, getItemById } from "../data/dummyItems";
+import { allItems } from "../data/allItems";
 import type { Keeplist, RequiredItem } from "../types";
+
+// Build items lookup map
+const itemsMap = new Map<string, RequiredItem>(
+  allItems.map((item) => [item.id, item])
+);
+
+function getItemById(itemId: string): RequiredItem | undefined {
+  return itemsMap.get(itemId);
+}
 
 function slugify(text: string): string {
   return text
@@ -61,7 +70,6 @@ export function KeeplistBuilder() {
   const [addingToList, setAddingToList] = useState<string | null>(null);
   const [newListName, setNewListName] = useState("");
   const [writeStatus, setWriteStatus] = useState<string | null>(null);
-  const [availableItems, setAvailableItems] = useState<RequiredItem[]>(dummyItems);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [focusedQtyItem, setFocusedQtyItem] = useState<{ keeplistId: string; itemId: string } | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -70,27 +78,14 @@ export function KeeplistBuilder() {
 
   const isDev = import.meta.env.DEV;
 
-  // Try to load allItems.ts if it exists
-  useEffect(() => {
-    import("../data/allItems")
-      .then((module) => {
-        if (module.allItems && module.allItems.length > 0) {
-          setAvailableItems(module.allItems);
-        }
-      })
-      .catch(() => {
-        // allItems.ts doesn't exist, keep using dummyItems
-      });
-  }, []);
-
   // Filter available items for adding
   const filteredItems = useMemo(() => {
-    if (!itemSearch.trim()) return availableItems.slice(0, 20);
+    if (!itemSearch.trim()) return allItems.slice(0, 20);
     const query = itemSearch.toLowerCase();
-    return availableItems
+    return allItems
       .filter((item) => item.name.toLowerCase().includes(query))
       .slice(0, 20);
-  }, [itemSearch, availableItems]);
+  }, [itemSearch]);
 
   // Reset highlighted index when search or filtered items change
   useEffect(() => {
@@ -379,12 +374,11 @@ export function KeeplistBuilder() {
             {expandedLists.has(keeplist.id) && (
               <div className="px-4 pb-3 space-y-2">
                 {keeplist.items.map((item) => {
-                  const itemData = getItemById(item.itemId) ||
-                    availableItems.find((i) => i.id === item.itemId) || {
-                      id: item.itemId,
-                      name: item.itemId,
-                      rarity: "Common" as const,
-                    };
+                  const itemData = getItemById(item.itemId) || {
+                    id: item.itemId,
+                    name: item.itemId.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+                    rarity: "Common" as const,
+                  };
 
                   return (
                     <div

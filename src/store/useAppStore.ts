@@ -27,6 +27,7 @@ interface AppStore {
 
   // Settings
   setShowCompleted: (show: boolean) => void;
+  setAnimationsEnabled: (enabled: boolean) => void;
 
   // Import/Export
   exportData: () => string;
@@ -37,6 +38,7 @@ interface AppStore {
 const defaultSettings: AppSettings = {
   showCompleted: false,
   activeKeeplistIds: [], // Empty means all are active
+  animationsEnabled: true, // Fade animations on by default
 };
 
 // Helper to create a slug from a name
@@ -204,6 +206,13 @@ export const useAppStore = create<AppStore>()(
       setShowCompleted: (show) => {
         set((state) => ({
           settings: { ...state.settings, showCompleted: show },
+        }));
+      },
+
+      // Toggle animations setting
+      setAnimationsEnabled: (enabled) => {
+        set((state) => ({
+          settings: { ...state.settings, animationsEnabled: enabled },
         }));
       },
 
@@ -449,6 +458,7 @@ export const useAppStore = create<AppStore>()(
         return {
           ...currentState,
           settings: {
+            ...defaultSettings,  // Ensure defaults for any new settings
             ...persistedSettings,
             activeKeeplistIds: validActiveIds,
           },

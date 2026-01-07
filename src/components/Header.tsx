@@ -55,6 +55,7 @@ export function Header() {
   const {
     settings,
     setShowCompleted,
+    setAnimationsEnabled,
     exportData,
     importData,
     resetToDefaults,
@@ -174,13 +175,30 @@ export function Header() {
                   />
 
                   {/* Menu */}
-                  <div className="absolute right-0 mt-2 w-48 bg-slate-700 rounded-lg shadow-xl border border-slate-600 z-20">
+                  <div className="absolute right-0 mt-2 w-48 bg-slate-700 rounded-lg shadow-xl border border-slate-600 z-20 overflow-hidden">
+                    <div
+                      onClick={() =>
+                        setAnimationsEnabled(!settings.animationsEnabled)
+                      }
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:bg-slate-600 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={settings.animationsEnabled ?? true}
+                        onChange={() => {}}
+                        className="w-4 h-4 rounded border-slate-500 bg-slate-600 text-blue-500 focus:ring-blue-500 focus:ring-offset-slate-700 pointer-events-none"
+                      />
+                      Animations
+                    </div>
+
+                    <hr className="border-slate-600" />
+
                     <button
                       onClick={() => {
                         handleExport();
                         setSettingsOpen(false);
                       }}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:bg-slate-600 rounded-t-lg"
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:bg-slate-600 cursor-pointer"
                     >
                       <Download className="w-4 h-4" />
                       Export Data

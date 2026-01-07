@@ -16,6 +16,7 @@ export interface AppState {
 export interface AppSettings {
   showCompleted: boolean;
   activeKeeplistIds: string[]; // IDs of keeplists to show (empty = all active)
+  animationsEnabled: boolean; // Whether to show fade animations on completion
 }
 
 export interface Keeplist {

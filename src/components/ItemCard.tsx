@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { DemandRow } from "./DemandRow";
 import { getItemImage, type RequiredItem, type KeeplistItem } from "../types";
+import { useAppStore } from "../store/useAppStore";
 
 /** Total fade duration: delay + animation time (in ms) */
 const FADE_DELAY_MS = 500;
@@ -25,15 +26,20 @@ export function ItemCard({
   showCompleted,
   itemIndex,
 }: ItemCardProps) {
+  // Get animations setting from store
+  const animationsEnabled = useAppStore(
+    (state) => state.settings.animationsEnabled
+  );
+
   // Check if all demands are completed
   const allCompleted = demands.every((d) => d.item.isCompleted);
-  
-  // Should this card fade out? (all complete and not showing completed)
-  const shouldFadeOut = allCompleted && !showCompleted;
+
+  // Should this card be hidden? (all complete and not showing completed)
+  const shouldHide = allCompleted && !showCompleted;
 
   // Track fade state - initialize to 'hidden' if already completed (prevents flicker on load)
   const [fadeState, setFadeState] = useState<"visible" | "fading" | "hidden">(
-    () => (allCompleted && !showCompleted) ? "hidden" : "visible"
+    () => (shouldHide ? "hidden" : "visible")
   );
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -43,21 +49,28 @@ export function ItemCard({
     return sum + remaining;
   }, 0);
 
-  // Reset fade state when conditions change (outside effect to avoid lint warning)
-  // This runs during render when shouldFadeOut becomes false
-  if (!shouldFadeOut && fadeState !== "visible") {
+  // Handle state transitions during render (outside effect to avoid lint warnings)
+  // Reset to visible when shouldHide becomes false
+  if (!shouldHide && fadeState !== "visible") {
     setFadeState("visible");
   }
+  // When animations disabled, hide immediately (no fade)
+  if (shouldHide && !animationsEnabled && fadeState !== "hidden") {
+    setFadeState("hidden");
+  }
 
-  // Handle fade-out timing with JavaScript timers (more reliable than CSS animation events)
+  // Handle fade-out timing with JavaScript timers (only when animations enabled)
   useEffect(() => {
+    // Skip if animations disabled (handled synchronously above)
+    if (!animationsEnabled) return;
+
     // Clear any existing timer
     if (fadeTimerRef.current) {
       clearTimeout(fadeTimerRef.current);
       fadeTimerRef.current = null;
     }
 
-    if (shouldFadeOut && fadeState === "visible") {
+    if (shouldHide && fadeState === "visible") {
       // Start fade after delay
       fadeTimerRef.current = setTimeout(() => {
         setFadeState("fading");
@@ -73,17 +86,17 @@ export function ItemCard({
         clearTimeout(fadeTimerRef.current);
       }
     };
-  }, [shouldFadeOut, fadeState]);
+  }, [shouldHide, fadeState, animationsEnabled]);
 
   // Don't render if hidden
   if (fadeState === "hidden") {
     return null;
   }
 
-  // We're "fading out" anytime we should fade (includes delay period AND animation)
+  // We're "fading out" anytime we should hide (includes delay period AND animation)
   // This ensures the card stays visible during the delay before animation starts
-  const isFadingOut = shouldFadeOut;
-  
+  const isFadingOut = shouldHide;
+
   // Only apply the CSS animation class when actually animating (not during delay)
   const showFadeAnimation = fadeState === "fading";
 
@@ -96,7 +109,10 @@ export function ItemCard({
   const displayCount = showCompleted ? demands.length : activeDemandsCount;
 
   // Don't render if no demands at all, or if all hidden (all complete and not showing completed, after fade)
-  if (demands.length === 0 || (activeDemandsCount === 0 && !showCompleted && !isFadingOut)) {
+  if (
+    demands.length === 0 ||
+    (activeDemandsCount === 0 && !showCompleted && !isFadingOut)
+  ) {
     return null;
   }
 

@@ -26,16 +26,17 @@ export function DemandRow({
   demandIndex = 0,
   showCompleted,
 }: DemandRowProps) {
-  // Should this row fade out? (completed and not showing completed items)
-  const shouldFadeOut = item.isCompleted && !showCompleted;
+  // Should this row be hidden? (completed and not showing completed items)
+  const shouldHide = item.isCompleted && !showCompleted;
 
   // All hooks must be called before any early returns
   // Initialize to 'hidden' if already completed (prevents flicker on load)
   const [fadeState, setFadeState] = useState<"visible" | "fading" | "hidden">(
-    () => shouldFadeOut ? "hidden" : "visible"
+    () => shouldHide ? "hidden" : "visible"
   );
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { updateItemQty, completeItem } = useAppStore();
+  const { updateItemQty, completeItem, settings } = useAppStore();
+  const animationsEnabled = settings.animationsEnabled;
 
   // Calculate tabIndex for custom tab order:
   // 1. Search box (tabIndex=1)
@@ -48,19 +49,27 @@ export function DemandRow({
   const completeTabIndex = 10000 + baseIndex;
   const decrementTabIndex = 20000 + baseIndex;
 
-  // Reset fade state when conditions change
-  if (!shouldFadeOut && fadeState !== "visible") {
+  // Handle state transitions during render (outside effect to avoid lint warnings)
+  // Reset to visible when shouldHide becomes false
+  if (!shouldHide && fadeState !== "visible") {
     setFadeState("visible");
   }
+  // When animations disabled, hide immediately (no fade)
+  if (shouldHide && !animationsEnabled && fadeState !== "hidden") {
+    setFadeState("hidden");
+  }
 
-  // Handle fade-out timing
+  // Handle fade-out timing (only when animations enabled)
   useEffect(() => {
+    // Skip if animations disabled (handled synchronously above)
+    if (!animationsEnabled) return;
+
     if (fadeTimerRef.current) {
       clearTimeout(fadeTimerRef.current);
       fadeTimerRef.current = null;
     }
 
-    if (shouldFadeOut && fadeState === "visible") {
+    if (shouldHide && fadeState === "visible") {
       fadeTimerRef.current = setTimeout(() => {
         setFadeState("fading");
         fadeTimerRef.current = setTimeout(() => {
@@ -74,7 +83,7 @@ export function DemandRow({
         clearTimeout(fadeTimerRef.current);
       }
     };
-  }, [shouldFadeOut, fadeState]);
+  }, [shouldHide, fadeState, animationsEnabled]);
 
   // Don't render if hidden
   if (fadeState === "hidden") {

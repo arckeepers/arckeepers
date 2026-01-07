@@ -40,12 +40,20 @@ export function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const { keeplists, settings } = useAppStore();
 
-  // Build aggregated item list with all demands
+  // Determine active keeplists
+  const activeKeeplists = useMemo(() => {
+    if (settings.activeKeeplistIds.length === 0) {
+      return keeplists; // All are active
+    }
+    return keeplists.filter((kl) => settings.activeKeeplistIds.includes(kl.id));
+  }, [keeplists, settings.activeKeeplistIds]);
+
+  // Build aggregated item list with all demands from active keeplists only
   const itemsWithDemands = useMemo(() => {
     const demandMap = new Map<string, DemandInfo[]>();
 
-    // Collect all demands from all keeplists
-    for (const keeplist of keeplists) {
+    // Collect all demands from active keeplists only
+    for (const keeplist of activeKeeplists) {
       for (const keeplistItem of keeplist.items) {
         const demands = demandMap.get(keeplistItem.itemId) || [];
         demands.push({
@@ -68,7 +76,7 @@ export function HomePage() {
     result.sort((a, b) => a.item.name.localeCompare(b.item.name));
 
     return result;
-  }, [keeplists]);
+  }, [activeKeeplists]);
 
   // Filter items based on search query (fuzzy/subtext matching)
   const filteredItems = useMemo(() => {

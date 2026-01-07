@@ -15,6 +15,7 @@ export interface AppState {
 
 export interface AppSettings {
   showCompleted: boolean;
+  activeKeeplistIds: string[]; // IDs of keeplists to show (empty = all active)
 }
 
 export interface Keeplist {

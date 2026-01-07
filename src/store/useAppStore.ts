@@ -8,19 +8,27 @@ interface AppStore {
   keeplists: Keeplist[];
   settings: AppSettings;
 
-  // Actions
-  updateItemQty: (
-    keeplistId: string,
-    itemId: string,
-    delta: number
-  ) => void;
-  setItemQty: (
-    keeplistId: string,
-    itemId: string,
-    qty: number
-  ) => void;
+  // Item quantity actions
+  updateItemQty: (keeplistId: string, itemId: string, delta: number) => void;
+  setItemQty: (keeplistId: string, itemId: string, qty: number) => void;
   completeItem: (keeplistId: string, itemId: string) => void;
+
+  // User keeplist management
+  createUserKeeperlist: (name: string) => string | null;
+  updateUserKeeperlist: (keeplistId: string, name: string) => void;
+  deleteUserKeeperlist: (keeplistId: string) => void;
+  addItemToKeeperlist: (keeplistId: string, itemId: string, qtyRequired: number) => void;
+  removeItemFromKeeperlist: (keeplistId: string, itemId: string) => void;
+  updateKeeplistItemQty: (keeplistId: string, itemId: string, qtyRequired: number) => void;
+
+  // Active keeplist management
+  toggleKeeplistActive: (keeplistId: string) => void;
+  setKeeplistActive: (keeplistId: string, active: boolean) => void;
+
+  // Settings
   setShowCompleted: (show: boolean) => void;
+
+  // Import/Export
   exportData: () => string;
   importData: (jsonString: string) => boolean;
   resetToDefaults: () => void;
@@ -28,7 +36,16 @@ interface AppStore {
 
 const defaultSettings: AppSettings = {
   showCompleted: false,
+  activeKeeplistIds: [], // Empty means all are active
 };
+
+// Helper to create a slug from a name
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 /**
  * Merge system keeplists from the app with persisted user progress.
@@ -190,6 +207,169 @@ export const useAppStore = create<AppStore>()(
         }));
       },
 
+      // Create a new user keeplist
+      createUserKeeperlist: (name) => {
+        const id = slugify(name);
+        const state = get();
+        
+        // Check for duplicate
+        if (state.keeplists.some((kl) => kl.id === id)) {
+          return null;
+        }
+
+        const newKeeperlist: Keeplist = {
+          id,
+          name: name.trim(),
+          isSystem: false,
+          items: [],
+        };
+
+        set((state) => ({
+          keeplists: [...state.keeplists, newKeeperlist],
+          // Auto-activate new keeplist
+          settings: {
+            ...state.settings,
+            activeKeeplistIds: state.settings.activeKeeplistIds.length === 0
+              ? [] // If all were active, keep all active
+              : [...state.settings.activeKeeplistIds, id],
+          },
+        }));
+
+        return id;
+      },
+
+      // Update user keeplist name
+      updateUserKeeperlist: (keeplistId, name) => {
+        set((state) => ({
+          keeplists: state.keeplists.map((kl) =>
+            kl.id === keeplistId && !kl.isSystem
+              ? { ...kl, name: name.trim() }
+              : kl
+          ),
+        }));
+      },
+
+      // Delete user keeplist
+      deleteUserKeeperlist: (keeplistId) => {
+        set((state) => ({
+          keeplists: state.keeplists.filter(
+            (kl) => kl.id !== keeplistId || kl.isSystem
+          ),
+          settings: {
+            ...state.settings,
+            activeKeeplistIds: state.settings.activeKeeplistIds.filter(
+              (id) => id !== keeplistId
+            ),
+          },
+        }));
+      },
+
+      // Add item to a user keeplist
+      addItemToKeeperlist: (keeplistId, itemId, qtyRequired) => {
+        set((state) => ({
+          keeplists: state.keeplists.map((kl) => {
+            if (kl.id !== keeplistId || kl.isSystem) return kl;
+            if (kl.items.some((item) => item.itemId === itemId)) return kl;
+            return {
+              ...kl,
+              items: [
+                ...kl.items,
+                { itemId, qtyOwned: 0, qtyRequired, isCompleted: false },
+              ],
+            };
+          }),
+        }));
+      },
+
+      // Remove item from a user keeplist
+      removeItemFromKeeperlist: (keeplistId, itemId) => {
+        set((state) => ({
+          keeplists: state.keeplists.map((kl) => {
+            if (kl.id !== keeplistId || kl.isSystem) return kl;
+            return {
+              ...kl,
+              items: kl.items.filter((item) => item.itemId !== itemId),
+            };
+          }),
+        }));
+      },
+
+      // Update required quantity for an item in a user keeplist
+      // Note: qtyRequired=0 means "infinite demand" (never completes)
+      updateKeeplistItemQty: (keeplistId, itemId, qtyRequired) => {
+        set((state) => ({
+          keeplists: state.keeplists.map((kl) => {
+            if (kl.id !== keeplistId || kl.isSystem) return kl;
+            return {
+              ...kl,
+              items: kl.items.map((item) =>
+                item.itemId === itemId
+                  ? {
+                      ...item,
+                      qtyRequired: Math.max(0, qtyRequired),
+                      // qtyRequired=0 means infinite demand, never complete
+                      isCompleted: qtyRequired > 0 && item.qtyOwned >= qtyRequired,
+                    }
+                  : item
+              ),
+            };
+          }),
+        }));
+      },
+
+      // Toggle a keeplist's active state
+      toggleKeeplistActive: (keeplistId) => {
+        set((state) => {
+          const allIds = state.keeplists.map((kl) => kl.id);
+          let activeIds = state.settings.activeKeeplistIds;
+          
+          // If empty (all active), initialize with all IDs
+          if (activeIds.length === 0) {
+            activeIds = allIds;
+          }
+
+          const isActive = activeIds.includes(keeplistId);
+          const newActiveIds = isActive
+            ? activeIds.filter((id) => id !== keeplistId)
+            : [...activeIds, keeplistId];
+
+          // If all are now active, reset to empty (meaning all)
+          const allActive = allIds.every((id) => newActiveIds.includes(id));
+
+          return {
+            settings: {
+              ...state.settings,
+              activeKeeplistIds: allActive ? [] : newActiveIds,
+            },
+          };
+        });
+      },
+
+      // Set a keeplist's active state explicitly
+      setKeeplistActive: (keeplistId, active) => {
+        set((state) => {
+          const allIds = state.keeplists.map((kl) => kl.id);
+          let activeIds = state.settings.activeKeeplistIds;
+          
+          if (activeIds.length === 0) {
+            activeIds = allIds;
+          }
+
+          const newActiveIds = active
+            ? activeIds.includes(keeplistId) ? activeIds : [...activeIds, keeplistId]
+            : activeIds.filter((id) => id !== keeplistId);
+
+          const allActive = allIds.every((id) => newActiveIds.includes(id));
+
+          return {
+            settings: {
+              ...state.settings,
+              activeKeeplistIds: allActive ? [] : newActiveIds,
+            },
+          };
+        });
+      },
+
       // Export state as JSON string
       exportData: () => {
         const state = get();
@@ -220,12 +400,15 @@ export const useAppStore = create<AppStore>()(
         }
       },
 
-      // Reset to default system keeplists
+      // Reset to default system keeplists (keeps user keeplists)
       resetToDefaults: () => {
-        set({
-          keeplists: systemKeeplists,
+        set((state) => ({
+          keeplists: [
+            ...systemKeeplists,
+            ...state.keeplists.filter((kl) => !kl.isSystem),
+          ],
           settings: defaultSettings,
-        });
+        }));
       },
     }),
     {
@@ -233,11 +416,43 @@ export const useAppStore = create<AppStore>()(
       // Custom merge to handle system keeplist updates
       merge: (persistedState, currentState) => {
         const persisted = persistedState as Partial<AppStore> | undefined;
+        const mergedKeeplists = mergeKeeplists(persisted?.keeplists, systemKeeplists);
         
+        // Merge settings, ensuring activeKeeplistIds only contains valid IDs
+        const persistedSettings = persisted?.settings ?? defaultSettings;
+        const validKeeplistIds = new Set(mergedKeeplists.map((kl) => kl.id));
+        
+        // Find IDs of system keeplists that existed in persisted state
+        const persistedSystemIds = new Set(
+          (persisted?.keeplists || [])
+            .filter((kl) => kl.isSystem)
+            .map((kl) => kl.id)
+        );
+        
+        // Find new system keeplists (in canonical but not in persisted)
+        const newSystemKeeplistIds = systemKeeplists
+          .filter((kl) => !persistedSystemIds.has(kl.id))
+          .map((kl) => kl.id);
+
+        // Filter out invalid IDs from persisted activeKeeplistIds
+        let validActiveIds = (persistedSettings.activeKeeplistIds || []).filter(
+          (id) => validKeeplistIds.has(id)
+        );
+
+        // Auto-enable new system keeplists
+        // If user has customized their active list (not empty), add new system keeplists
+        if (validActiveIds.length > 0 && newSystemKeeplistIds.length > 0) {
+          validActiveIds = [...validActiveIds, ...newSystemKeeplistIds];
+        }
+        // If validActiveIds is empty (meaning all were active), new keeplists are auto-included
+
         return {
           ...currentState,
-          settings: persisted?.settings ?? currentState.settings,
-          keeplists: mergeKeeplists(persisted?.keeplists, systemKeeplists),
+          settings: {
+            ...persistedSettings,
+            activeKeeplistIds: validActiveIds,
+          },
+          keeplists: mergedKeeplists,
         };
       },
       // After rehydration, force a save to update localStorage with merged keeplists
@@ -263,3 +478,30 @@ export const useKeeplists = () => useAppStore((state) => state.keeplists);
 export const useSettings = () => useAppStore((state) => state.settings);
 export const useShowCompleted = () =>
   useAppStore((state) => state.settings.showCompleted);
+
+// Get active keeplists only
+export const useActiveKeeplists = () =>
+  useAppStore((state) => {
+    const { keeplists, settings } = state;
+    if (settings.activeKeeplistIds.length === 0) {
+      return keeplists; // All are active
+    }
+    return keeplists.filter((kl) => settings.activeKeeplistIds.includes(kl.id));
+  });
+
+// Check if a specific keeplist is active
+export const useIsKeeplistActive = (keeplistId: string) =>
+  useAppStore((state) => {
+    if (state.settings.activeKeeplistIds.length === 0) {
+      return true; // All are active
+    }
+    return state.settings.activeKeeplistIds.includes(keeplistId);
+  });
+
+// Get user keeplists only
+export const useUserKeeplists = () =>
+  useAppStore((state) => state.keeplists.filter((kl) => !kl.isSystem));
+
+// Get system keeplists only
+export const useSystemKeeplists = () =>
+  useAppStore((state) => state.keeplists.filter((kl) => kl.isSystem));

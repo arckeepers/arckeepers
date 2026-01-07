@@ -33,19 +33,22 @@
 ### 3.2. Data Models (TypeScript)
 
 ```typescript
-// Read-only reference from CSV
+// Read-only reference from CSV/API
 interface RequiredItem {
   id: string; // e.g., "rusted-gear"
   name: string; // e.g. "Rusted Gear"
-  rarity: "Common" | "Uncommon" | "Rare" | "Epic";
+  rarity: "Common" | "Uncommon" | "Rare" | "Epic" | "Legendary";
 }
 
 // User State (Persisted)
 interface AppState {
   keeplists: Keeplist[];
-  settings: {
-    showCompleted: boolean;
-  };
+  settings: AppSettings;
+}
+
+interface AppSettings {
+  showCompleted: boolean;
+  activeKeeplistIds: string[]; // IDs of active keeplists (empty = all active)
 }
 
 interface Keeplist {
@@ -59,8 +62,8 @@ interface KeeplistItem {
   itemId: string; // Relates to RequiredItem.id
   qtyOwned: number; // User input
   qtyRequired: number; // Target (from system or user).
-  // NOTE: If 0/null, implies "infinite demand"
-  isCompleted: boolean; // Derived state (owned >= required)
+  // NOTE: If 0, implies "infinite demand" (never completes)
+  isCompleted: boolean; // Derived state (owned >= required, false if qtyRequired=0)
 }
 ```
 
@@ -69,6 +72,30 @@ interface KeeplistItem {
 **Item Data:** Fetched from the MetaForge API using the Item Crawler dev tool (`npm run fetch-items`). Stored in `src/data/allItems.ts`.
 
 **System Keeplists:** Maintained using the Keeplist Builder dev tool and stored in `src/data/systemKeeplists.ts`. The app ships with predefined keeplists (e.g., "Workbenches", "Expedition 2", "Flickering Flames").
+
+**User Keeplists:** Created by users through the "My Keeplists" UI. Stored in browser localStorage alongside other app state.
+
+### 3.4. User Keeplists
+
+Users can create custom keeplists to track items they need:
+
+- **Create:** Name a new keeplist (auto-generates slug ID)
+- **Add Items:** Search and add items from the game database
+- **Set Quantities:** Specify how many of each item is needed
+  - Set to **0** for "infinite demand" (item is always tracked, never completes)
+- **Remove Items:** Delete items from the keeplist
+- **Delete Keeplist:** Remove an entire custom keeplist
+
+User keeplists are distinguished from system keeplists (`isSystem: false`) and cannot be edited by app updates.
+
+### 3.5. Active Keeplists
+
+Users can toggle which keeplists appear in the main view:
+
+- **All Active:** By default, all keeplists (system and user) are active
+- **Selective:** Users can disable specific keeplists to hide their items
+- **New System Keeplists:** When the app adds new system keeplists, they are automatically enabled for existing users
+- **Persistence:** Active/inactive state is saved to localStorage
 
 ## 4. Core Logic
 
@@ -100,46 +127,74 @@ When the app loads, it checks against a "System Data" file.
 
 ### 5.1. Layout
 
-- **Header:** Logo, "Show Completed" toggle, Settings (Import/Export).
+- **Header:** Logo, Keeplists button, "Show Completed" toggle, Settings (Import/Export).
 - **Intro:** A small, collapsible section explaining how the app works (Keeplists, Allocations).
-- **Search Bar:** Sticky top. Performs "Subtext Matching" (fuzzy search).
-- **Main View:** Vertical list of **Required Item Cards**.
+- **Search Bar:** Sticky top. Performs "Subtext Matching" (fuzzy search). Escape key clears search.
+- **Main View:** Vertical list of **Required Item Cards** (from active keeplists only).
+
+### 5.1.1 Keeplists Panel
+
+Accessed via the "Keeplists" button in the header. Contains two tabs:
+
+- **Active Lists:** Toggle which keeplists appear in the main view
+  - System keeplists shown with blue checkboxes
+  - User keeplists shown with green checkboxes
+  - Shows item count for each keeplist
+- **My Keeplists:** Create and manage custom keeplists
+  - Create new keeplists by name
+  - Add/remove items with search autocomplete
+  - Set required quantities (0 for unlimited)
+  - Delete entire keeplists
 
 ### 5.2. Item Card Design
 
 The list is organized by **Item**, not by List. Sorted alphabetically by name.
 
-- **Card Header:** [Icon] **Item Name** [Rarity Badge]
-- **Card Body:** A list of "Demand Rows" (one row per Keeplist requiring this item).
-- _Row:_ `[Keeplist Name] ....... [Owned] / [Required]  [-] [+] [Tick]`
+- **Card Layout (Horizontal):**
+  - **Left:** Item icon with rarity-colored left border, quantity badge (×N total needed)
+  - **Middle:** Item name, rarity text, list count ("Rare · 2 lists")
+  - **Right:** Stacked keeplist demand rows
 
-- **Behavior:** Only show Item Cards that have at least one active (incomplete) requirement, unless "Show Completed" is on.
+- **Demand Row:** `[Keeplist Name] [Progress Bar] [Owned/Required] [-] [+] [✓]`
+
+- **Rarity Colors:**
+  - Common: Gray
+  - Uncommon: Green
+  - Rare: Blue
+  - Epic: Purple
+  - Legendary: Amber
+
+- **Behavior:** Only show Item Cards that have at least one active (incomplete) requirement from an active keeplist, unless "Show Completed" is on.
 
 ### 5.3. Keyboard Navigation (Critical)
 
 - **Alpha-Hijack:**
-- If the user types `a-z`, even if the focus is an input field:
+  - If the user types `a-z` while not in an input field:
+    1. Focus the Search Bar.
+    2. Input the pressed key (append to existing text).
+  - **Disabled when:** Ctrl, Alt, or Meta (Cmd) is held (allows Cmd+R, Cmd+C, etc.)
+  - Note: This does not apply to `0-9` or other characters.
 
-1. Focus the Search Bar.
-2. Input the pressed key (append to existing text).
+- **Search Bar:**
+  - `Escape` clears the search query
 
-Note: This does not apply to `0-9` or any other characters.
-
-- **Tab Traversal:**
-- `TAB` moves focus through interactive elements (`+`, `-`, `Tick`).
-- Flow: After the last control of Item A, focus moves to the first control of Item B.
-- Search Interaction: As the search filters the list, the Tab order updates immediately to reflect the visible items.
+- **Tab Traversal (Custom Order):**
+  - From search box, Tab cycles through:
+    1. All increment (+) buttons
+    2. All completion (✓) buttons
+    3. All decrement (-) buttons
+    4. Clear search button
+    5. Back to search box
+  - This allows efficient keyboard-only quantity entry.
 
 ### 5.4. Image Handling
 
-- **Placeholder Logic:**
+- **Primary Source:** MetaForge CDN for item icons
+- **Fallback:** Placeholder image with item initials
 
 ```javascript
-// Use this strictly for now
 const getItemImage = (slug: string) =>
-  `https://placehold.co/64x64/333/FFF?text=${slug
-    .substring(0, 2)
-    .toUpperCase()}`;
+  `https://cdn.metaforge.app/arc-raiders/icons/${slug}.webp`;
 ```
 
 ## 6. Developer Tools (Internal)

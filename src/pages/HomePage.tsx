@@ -1,0 +1,120 @@
+import { useState, useMemo } from "react";
+import { Header } from "../components/Header";
+import { SearchBar } from "../components/SearchBar";
+import { Intro } from "../components/Intro";
+import { ItemCard } from "../components/ItemCard";
+import { useAppStore } from "../store/useAppStore";
+import { getItemById } from "../data/dummyItems";
+import type { RequiredItem, KeeplistItem } from "../types";
+
+interface DemandInfo {
+  keeplistId: string;
+  keeplistName: string;
+  item: KeeplistItem;
+}
+
+interface ItemWithDemands {
+  item: RequiredItem;
+  demands: DemandInfo[];
+}
+
+export function HomePage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const { keeplists, settings } = useAppStore();
+
+  // Build aggregated item list with all demands
+  const itemsWithDemands = useMemo(() => {
+    const itemMap = new Map<string, DemandInfo[]>();
+
+    // Collect all demands from all keeplists
+    for (const keeplist of keeplists) {
+      for (const keeplistItem of keeplist.items) {
+        const demands = itemMap.get(keeplistItem.itemId) || [];
+        demands.push({
+          keeplistId: keeplist.id,
+          keeplistName: keeplist.name,
+          item: keeplistItem,
+        });
+        itemMap.set(keeplistItem.itemId, demands);
+      }
+    }
+
+    // Convert to array with item metadata
+    const result: ItemWithDemands[] = [];
+    for (const [itemId, demands] of itemMap) {
+      const item = getItemById(itemId);
+      if (item) {
+        result.push({ item, demands });
+      }
+    }
+
+    // Sort alphabetically by item name
+    result.sort((a, b) => a.item.name.localeCompare(b.item.name));
+
+    return result;
+  }, [keeplists]);
+
+  // Filter items based on search query (fuzzy/subtext matching)
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return itemsWithDemands;
+    }
+
+    const query = searchQuery.toLowerCase();
+    return itemsWithDemands.filter((entry) =>
+      entry.item.name.toLowerCase().includes(query)
+    );
+  }, [itemsWithDemands, searchQuery]);
+
+  // Further filter based on completion status
+  const visibleItems = useMemo(() => {
+    if (settings.showCompleted) {
+      return filteredItems;
+    }
+
+    // Only show items that have at least one incomplete demand
+    return filteredItems.filter((entry) =>
+      entry.demands.some((d) => !d.item.isCompleted)
+    );
+  }, [filteredItems, settings.showCompleted]);
+
+  return (
+    <div className="min-h-screen bg-slate-900">
+      <Header />
+      <SearchBar value={searchQuery} onChange={setSearchQuery} />
+      <Intro />
+
+      <main className="max-w-4xl mx-auto px-4 pb-8">
+        {visibleItems.length === 0 ? (
+          <div className="text-center py-12 text-slate-400">
+            {searchQuery ? (
+              <p>No items match "{searchQuery}"</p>
+            ) : settings.showCompleted ? (
+              <p>No items to display.</p>
+            ) : (
+              <p>
+                All items complete! Toggle "Show Completed" to view them.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {visibleItems.map((entry) => (
+              <ItemCard
+                key={entry.item.id}
+                item={entry.item}
+                demands={entry.demands}
+                showCompleted={settings.showCompleted}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Item count footer */}
+        <div className="mt-6 text-center text-sm text-slate-500">
+          Showing {visibleItems.length} of {itemsWithDemands.length} items
+        </div>
+      </main>
+    </div>
+  );
+}

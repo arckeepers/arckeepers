@@ -129,9 +129,9 @@ export function Header() {
             <img
               src="/logo.svg"
               alt="ARC Keepers Logo"
-              className="h-16 -mr-4 -mt-3 -mb-3"
+              className="h-16 -mr-5 -mt-3 -mb-3"
             />
-            <h1 className="text-lg sm:text-xl font-semibold text-slate-50">
+            <h1 className="text-3xl font-bold italic font-(family-name:Poppins)">
               ARC Keepers
             </h1>
           </div>

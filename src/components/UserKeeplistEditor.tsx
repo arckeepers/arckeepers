@@ -1,5 +1,12 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Plus, Trash2, Search, ChevronDown, ChevronRight, X } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Search,
+  ChevronDown,
+  ChevronRight,
+  X,
+} from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { allItems, getItemByIdWithFallback } from "../data/allItems";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -14,8 +21,12 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
   const createUserKeeplist = useAppStore((state) => state.createUserKeeplist);
   const deleteUserKeeplist = useAppStore((state) => state.deleteUserKeeplist);
   const addItemToKeeplist = useAppStore((state) => state.addItemToKeeplist);
-  const removeItemFromKeeplist = useAppStore((state) => state.removeItemFromKeeplist);
-  const updateKeeplistItemQty = useAppStore((state) => state.updateKeeplistItemQty);
+  const removeItemFromKeeplist = useAppStore(
+    (state) => state.removeItemFromKeeplist
+  );
+  const updateKeeplistItemQty = useAppStore(
+    (state) => state.updateKeeplistItemQty
+  );
 
   const userKeeplists = keeplists.filter((kl) => !kl.isSystem);
   const { confirm, dialogProps } = useConfirmDialog();
@@ -46,7 +57,9 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
   // Scroll highlighted item into view
   useEffect(() => {
     if (listRef.current) {
-      const highlighted = listRef.current.querySelector('[data-highlighted="true"]');
+      const highlighted = listRef.current.querySelector(
+        '[data-highlighted="true"]'
+      );
       if (highlighted) {
         highlighted.scrollIntoView({ block: "nearest" });
       }
@@ -67,7 +80,10 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
     }
   };
 
-  const handleDeleteKeeplist = async (keeplistId: string, keeplistName: string) => {
+  const handleDeleteKeeplist = async (
+    keeplistId: string,
+    keeplistName: string
+  ) => {
     const confirmed = await confirm({
       title: "Delete Keeplist",
       message: `Are you sure you want to delete "${keeplistName}"? This action cannot be undone.`,
@@ -114,7 +130,12 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
       case "Enter":
         e.preventDefault();
         if (selectableItems[highlightedIndex]) {
-          addItemToKeeplist(keeplistId, selectableItems[highlightedIndex].id, 1);
+          addItemToKeeplist(
+            keeplistId,
+            selectableItems[highlightedIndex].id,
+            0
+          );
+          setItemSearch("");
         }
         break;
       case "Escape":
@@ -140,7 +161,8 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
       </div>
 
       <p className="text-sm text-slate-400">
-        Create custom keeplists to track items you need. These are stored locally.
+        Create custom keeplists to track items you need. These are stored
+        locally.
       </p>
 
       {/* Create new keeplist */}
@@ -168,9 +190,7 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
             Create
           </button>
         </div>
-        {createError && (
-          <p className="text-sm text-red-400">{createError}</p>
-        )}
+        {createError && <p className="text-sm text-red-400">{createError}</p>}
       </div>
 
       {/* User keeplists */}
@@ -202,7 +222,9 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
                   {keeplist.items.length} items
                 </span>
                 <button
-                  onClick={() => handleDeleteKeeplist(keeplist.id, keeplist.name)}
+                  onClick={() =>
+                    handleDeleteKeeplist(keeplist.id, keeplist.name)
+                  }
                   className="p-1 text-slate-500 hover:text-red-400 transition-colors"
                   title="Delete keeplist"
                 >
@@ -245,7 +267,9 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
                           />
                         </div>
                         <button
-                          onClick={() => removeItemFromKeeplist(keeplist.id, item.itemId)}
+                          onClick={() =>
+                            removeItemFromKeeplist(keeplist.id, item.itemId)
+                          }
                           className="p-1 text-slate-500 hover:text-red-400 transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -269,7 +293,10 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
                           className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
-                      <div ref={listRef} className="max-h-48 overflow-y-auto space-y-1">
+                      <div
+                        ref={listRef}
+                        className="max-h-48 overflow-y-auto space-y-1"
+                      >
                         {(() => {
                           let selectableIndex = 0;
 
@@ -281,7 +308,8 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
                               ? -1
                               : selectableIndex++;
                             const isHighlighted =
-                              !isDisabled && currentSelectableIndex === highlightedIndex;
+                              !isDisabled &&
+                              currentSelectableIndex === highlightedIndex;
 
                             return (
                               <button
@@ -297,7 +325,11 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
                                   isHighlighted
                                     ? "bg-blue-600 text-white"
                                     : "hover:bg-slate-800"
-                                } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                                } ${
+                                  isDisabled
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                }`}
                               >
                                 <span className="flex-1">{item.name}</span>
                                 <span

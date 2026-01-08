@@ -140,13 +140,13 @@ export const ItemCard = memo(function ItemCard({
       onAnimationEnd={handleAnimationEnd}
     >
       {/* Desktop: horizontal layout */}
-      <div className="hidden md:flex items-stretch p-2 gap-3">
+      <div className="hidden md:flex items-center p-2 gap-3">
         {/* Left: Item icon with rarity border */}
         <div className="relative flex-shrink-0">
-          <div
-            className={`absolute inset-y-0 left-0 w-1 rounded-l ${rarityBgClass}`}
-          />
           <div className="w-16 h-16 bg-slate-900 rounded overflow-hidden ml-1 relative">
+            <div
+              className={`absolute inset-y-0 left-0 w-1 rounded-l ${rarityBgClass}`}
+            />
             <img
               src={getItemImage(item.id)}
               alt={item.name}
@@ -180,7 +180,7 @@ export const ItemCard = memo(function ItemCard({
         </div>
 
         {/* Right: Keeplist demand rows stacked */}
-        <div className="flex-1 flex flex-col justify-center gap-1 min-w-0">
+        <div className="flex-1 flex flex-col gap-1 min-w-0">
           {visibleDemands.map((demand, demandIndex) => (
             <DemandRow
               key={`${demand.keeplistId}-${demand.item.itemId}`}
@@ -202,10 +202,10 @@ export const ItemCard = memo(function ItemCard({
         <div className="flex items-center gap-3 p-3">
           {/* Item icon with rarity border */}
           <div className="relative flex-shrink-0">
-            <div
-              className={`absolute inset-y-0 left-0 w-1 rounded-l ${rarityBgClass}`}
-            />
             <div className="w-14 h-14 bg-slate-900 rounded overflow-hidden ml-1 relative">
+              <div
+                className={`absolute inset-y-0 left-0 w-1 rounded-l ${rarityBgClass}`}
+              />
               <img
                 src={getItemImage(item.id)}
                 alt={item.name}

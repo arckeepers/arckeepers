@@ -1,6 +1,6 @@
-# Contributing to Arc Keepers
+# Contributing to ARC Keepers
 
-Thank you for your interest in contributing to Arc Keepers! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to ARC Keepers! This document provides guidelines and information for contributors.
 
 ## Getting Started
 

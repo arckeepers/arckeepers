@@ -1,8 +1,8 @@
-# Product Specification: Arc Keepers
+# Product Specification: ARC Keepers
 
 ## 1. Project Overview
 
-**Arc Keepers** is a Progressive Web App (PWA) companion for the game _ARC Raiders_. It helps players track "Loot Items" needed for various game goals (crafting, quests, upgrades).
+**ARC Keepers** is a Progressive Web App (PWA) companion for the game _ARC Raiders_. It helps players track "Loot Items" needed for various game goals (crafting, quests, upgrades).
 
 - **Goal:** A "to-do list" for loot. Users see what they need, track what they have picked up, and hide items once requirements are met.
 - **Platform:** Web / PWA (GitHub Pages). Responsive design for desktop and mobile. Installable as a standalone app.
@@ -158,11 +158,13 @@ Accessed via the "Keeplists" button in the header. Contains two tabs:
 The list is organized by **Item**, not by List. Sorted alphabetically by name.
 
 - **Card Layout (Desktop, ≥768px):**
+
   - **Left:** Item icon with rarity-colored left border, quantity badge (×N total needed)
   - **Middle:** Item name, rarity text, list count ("Rare · 2 lists")
   - **Right:** Stacked keeplist demand rows (compact mode)
 
 - **Card Layout (Mobile, <768px):**
+
   - **Top Row:** Item icon with rarity border, item name, rarity text, list count
   - **Below:** Full-width keeplist demand rows with larger touch targets
 
@@ -170,6 +172,7 @@ The list is organized by **Item**, not by List. Sorted alphabetically by name.
 - **Demand Row (Mobile):** Two-row layout with keeplist name and quantity on top, progress bar and larger buttons below
 
 - **Rarity Colors:**
+
   - Common: Gray
   - Uncommon: Green
   - Rare: Blue
@@ -181,6 +184,7 @@ The list is organized by **Item**, not by List. Sorted alphabetically by name.
 ### 5.3. Keyboard Navigation (Critical)
 
 - **Alpha-Hijack:**
+
   - If the user types `a-z` while not in an input field:
     1. Focus the Search Bar.
     2. Input the pressed key (append to existing text).
@@ -188,6 +192,7 @@ The list is organized by **Item**, not by List. Sorted alphabetically by name.
   - Note: This does not apply to `0-9` or other characters.
 
 - **Search Bar:**
+
   - `Escape` clears the search query
 
 - **Tab Traversal (Custom Order):**

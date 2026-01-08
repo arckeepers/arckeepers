@@ -2,7 +2,7 @@
 
 ## Overview
 
-Arc Keepers is a client-side Progressive Web App (PWA) that runs entirely in your browser. There is no backend server — all data is stored locally in your browser's `localStorage`.
+ARC Keepers is a client-side Progressive Web App (PWA) that runs entirely in your browser. There is no backend server — all data is stored locally in your browser's `localStorage`.
 
 ## Data Storage
 
@@ -45,7 +45,7 @@ npm audit
 
 ## Scope
 
-Since Arc Keepers is a client-side application with no backend:
+Since ARC Keepers is a client-side application with no backend:
 
 - There are no server-side vulnerabilities
 - There is no SQL injection, XSS to steal auth tokens, or CSRF concerns

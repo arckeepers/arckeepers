@@ -1,8 +1,8 @@
-# Arc Keepers
+# ARC Keepers
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-**Arc Keepers** is a Progressive Web App (PWA) companion for the game [ARC Raiders](https://arcraiders.com). It helps players track loot items needed for expeditions, projects and quests.
+**ARC Keepers** is a Progressive Web App (PWA) companion for the game [ARC Raiders](https://arcraiders.com). It helps players track loot items needed for expeditions, projects and quests.
 
 🌐 **Live App:** [arckeepers.github.io](https://arckeepers.github.io/)
 

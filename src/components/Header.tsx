@@ -128,11 +128,11 @@ export function Header() {
           <div className="flex items-center gap-2 flex-shrink-0">
             <img
               src="/logo.svg"
-              alt="Arc Keepers Logo"
+              alt="ARC Keepers Logo"
               className="h-16 -mr-4 -mt-3 -mb-3"
             />
             <h1 className="text-lg sm:text-xl font-semibold text-slate-50">
-              Arc Keepers
+              ARC Keepers
             </h1>
           </div>
 

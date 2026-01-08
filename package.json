@@ -19,7 +19,7 @@
     "url": "https://github.com/arckeepers/arckeepers/issues"
   },
   "license": "Apache-2.0",
-  "author": "Arc Keepers Contributors",
+  "author": "ARC Keepers Contributors",
   "type": "module",
   "scripts": {
     "dev": "vite",

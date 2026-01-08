@@ -1,6 +1,6 @@
 # Developer Tools
 
-Arc Keepers includes internal tools for maintainers to manage game data. These tools are accessible via the `/dev` route or command line.
+ARC Keepers includes internal tools for maintainers to manage game data. These tools are accessible via the `/dev` route or command line.
 
 ## Item Crawler
 
@@ -25,12 +25,13 @@ npm run fetch-items
 
 This fetches all items and saves them to:
 
-| File | Description |
-|------|-------------|
-| `src/data/items.csv` | CSV format for external tools |
+| File                   | Description                       |
+| ---------------------- | --------------------------------- |
+| `src/data/items.csv`   | CSV format for external tools     |
 | `src/data/allItems.ts` | TypeScript module ready to import |
 
 The TypeScript module exports:
+
 - `allItems` - Array of all `RequiredItem` objects
 - `itemsById` - Map for O(1) lookup by ID
 - `getItemById(id)` - Helper function

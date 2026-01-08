@@ -11,7 +11,7 @@ export function Intro() {
         className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
       >
         <Info className="w-4 h-4" />
-        <span>How does Arc Keepers work?</span>
+        <span>How does ARC Keepers work?</span>
         {isOpen ? (
           <ChevronUp className="w-4 h-4" />
         ) : (
@@ -22,7 +22,7 @@ export function Intro() {
       {isOpen && (
         <div className="mt-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700 text-sm text-slate-300 space-y-3">
           <p>
-            <strong className="text-slate-100">Arc Keepers</strong> is a loot
+            <strong className="text-slate-100">ARC Keepers</strong> is a loot
             tracking companion for ARC Raiders. It helps you track which rare or
             difficult to find items you need to complete workbenches, projects
             and quests.

@@ -109,7 +109,8 @@ export function Header() {
     setSettingsOpen(false);
     const confirmed = await confirm({
       title: "Reset to Defaults",
-      message: "Reset all data to defaults? This will clear your progress and cannot be undone.",
+      message:
+        "Reset all data to defaults? This will clear your progress and cannot be undone.",
       confirmLabel: "Reset",
       variant: "danger",
     });
@@ -125,7 +126,11 @@ export function Header() {
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <img src="/logo.svg" alt="Arc Keepers Logo" className="w-10 h-10" />
+            <img
+              src="/logo.svg"
+              alt="Arc Keepers Logo"
+              className="h-16 -mr-4 -mt-3 -mb-3"
+            />
             <h1 className="text-lg sm:text-xl font-semibold text-slate-50">
               Arc Keepers
             </h1>

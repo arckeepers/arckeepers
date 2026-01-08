@@ -2,6 +2,13 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
+import { initPostHog, posthog } from "./utils/posthog";
+
+// Initialize PostHog
+initPostHog();
+
+// Track app open event
+posthog?.capture("open app");
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {

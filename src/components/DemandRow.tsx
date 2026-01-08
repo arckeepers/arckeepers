@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, memo } from "react";
 import { Minus, Plus, Check } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { useStatusAnnouncer } from "../hooks/useStatusAnnouncer";
+import { posthog } from "../utils/posthog";
 import type { KeeplistItem } from "../types";
 
 /** Fade timing - delay before fade starts */
@@ -40,6 +41,7 @@ export const DemandRow = memo(function DemandRow({
   const { updateItemQty, completeItem, settings } = useAppStore();
   const { announce } = useStatusAnnouncer();
   const animationsEnabled = settings.animationsEnabled;
+  const prevCompletedRef = useRef(item.isCompleted);
 
   // Handlers with screen reader announcements
   const handleIncrement = () => {
@@ -59,13 +61,25 @@ export const DemandRow = memo(function DemandRow({
     if (item.qtyOwned > 0) {
       updateItemQty(keeplistId, item.itemId, -1);
       const newQty = item.qtyOwned - 1;
-      announce(`${keeplistName}: ${newQty} of ${item.qtyRequired > 0 ? item.qtyRequired : "unlimited"}`);
+      announce(
+        `${keeplistName}: ${newQty} of ${
+          item.qtyRequired > 0 ? item.qtyRequired : "unlimited"
+        }`
+      );
     }
   };
 
   const handleComplete = () => {
     completeItem(keeplistId, item.itemId);
     announce(`${keeplistName}: Marked complete!`);
+    // Track event
+    posthog?.capture("item completed", {
+      keeplist_id: keeplistId,
+      keeplist_name: keeplistName,
+      item_id: item.itemId,
+      qty_required: item.qtyRequired,
+      qty_owned: item.qtyRequired, // Will be set to required
+    });
   };
 
   // Calculate tabIndex for custom tab order:
@@ -78,6 +92,30 @@ export const DemandRow = memo(function DemandRow({
   const incrementTabIndex = 100 + baseIndex;
   const completeTabIndex = 10000 + baseIndex;
   const decrementTabIndex = 20000 + baseIndex;
+
+  // Track item completion event when item becomes completed
+  useEffect(() => {
+    const prevCompleted = prevCompletedRef.current;
+    prevCompletedRef.current = item.isCompleted;
+
+    // Track when item transitions from incomplete to completed
+    if (!prevCompleted && item.isCompleted) {
+      posthog?.capture("item completed", {
+        keeplist_id: keeplistId,
+        keeplist_name: keeplistName,
+        item_id: item.itemId,
+        qty_required: item.qtyRequired,
+        qty_owned: item.qtyOwned,
+      });
+    }
+  }, [
+    item.isCompleted,
+    item.itemId,
+    item.qtyOwned,
+    item.qtyRequired,
+    keeplistId,
+    keeplistName,
+  ]);
 
   // Handle fade state transitions
   useEffect(() => {

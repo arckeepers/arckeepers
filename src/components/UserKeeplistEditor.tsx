@@ -11,6 +11,7 @@ import { useAppStore } from "../store/useAppStore";
 import { allItems, getItemByIdWithFallback } from "../data/allItems";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { useConfirmDialog } from "../hooks/useConfirmDialog";
+import { posthog } from "../utils/posthog";
 
 interface UserKeeplistEditorProps {
   onClose?: () => void;
@@ -75,6 +76,11 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
       setExpandedLists((prev) => new Set([...prev, id]));
       setNewListName("");
       setCreateError(null);
+      // Track event
+      posthog?.capture("create custom keeplist", {
+        keeplist_id: id,
+        keeplist_name: newListName.trim(),
+      });
     } else {
       setCreateError("A keeplist with this name already exists");
     }
@@ -130,12 +136,15 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
       case "Enter":
         e.preventDefault();
         if (selectableItems[highlightedIndex]) {
-          addItemToKeeplist(
-            keeplistId,
-            selectableItems[highlightedIndex].id,
-            0
-          );
+          const itemId = selectableItems[highlightedIndex].id;
+          addItemToKeeplist(keeplistId, itemId, 0);
           setItemSearch("");
+          // Track event
+          posthog?.capture("add item to keeplist", {
+            keeplist_id: keeplistId,
+            item_id: itemId,
+            item_name: selectableItems[highlightedIndex].name,
+          });
         }
         break;
       case "Escape":
@@ -317,6 +326,12 @@ export function UserKeeplistEditor({ onClose }: UserKeeplistEditorProps) {
                                 onClick={() => {
                                   if (!isDisabled) {
                                     addItemToKeeplist(keeplist.id, item.id, 1);
+                                    // Track event
+                                    posthog?.capture("add item to keeplist", {
+                                      keeplist_id: keeplist.id,
+                                      item_id: item.id,
+                                      item_name: item.name,
+                                    });
                                   }
                                 }}
                                 disabled={isDisabled}

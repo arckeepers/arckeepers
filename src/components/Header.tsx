@@ -14,6 +14,7 @@ import { KeeplistSelector } from "./KeeplistSelector";
 import { UserKeeplistEditor } from "./UserKeeplistEditor";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { useConfirmDialog } from "../hooks/useConfirmDialog";
+import { posthog } from "../utils/posthog";
 
 type KeeplistPanelTab = "select" | "manage";
 
@@ -46,23 +47,48 @@ export function Header() {
     }.json`;
     a.click();
     URL.revokeObjectURL(url);
+
+    // Track export event (no private data)
+    const keeplists = useAppStore.getState().keeplists;
+    posthog?.capture("data exported", {
+      file_size_bytes: blob.size,
+      keeplist_count: keeplists.length,
+      user_keeplist_count: keeplists.filter((kl) => !kl.isSystem).length,
+      system_keeplist_count: keeplists.filter((kl) => kl.isSystem).length,
+    });
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const fileSize = file.size;
+
     const reader = new FileReader();
     reader.onload = async (event) => {
       const content = event.target?.result as string;
       const success = importData(content);
-      if (!success) {
+
+      // Track import event (no private data)
+      if (success) {
+        const keeplists = useAppStore.getState().keeplists;
+        posthog?.capture("data imported", {
+          success: true,
+          file_size_bytes: fileSize,
+          keeplist_count: keeplists.length,
+          user_keeplist_count: keeplists.filter((kl) => !kl.isSystem).length,
+          system_keeplist_count: keeplists.filter((kl) => kl.isSystem).length,
+        });
+        setImportError(null);
+        setSettingsOpen(false);
+      } else {
+        posthog?.capture("data imported", {
+          success: false,
+          file_size_bytes: fileSize,
+        });
         setImportError("Failed to import data. Please check the file format.");
         // Clear error after 5 seconds
         setTimeout(() => setImportError(null), 5000);
-      } else {
-        setImportError(null);
-        setSettingsOpen(false);
       }
     };
     reader.readAsText(file);

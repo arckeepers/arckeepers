@@ -19,6 +19,10 @@ Happy looting!
 
 **NOTE:** This app is open source! Fixes and features are very welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) to get started. The initial version was shamelessly vibe-coded over a couple of hours. We are more than happy to accept AI-developed pull requests as long as they are of reasonable quality.
 
+## Privacy Notice
+
+This app stores all information locally in the browser - there is no login system and no private data is sent to the cloud. However, we do use the PostHog analytics package to track errors and feature usage. This is used to assess potential improvements. Session recording is NOT enabled.
+
 ## Features
 
 - 📋 **Keeplist System** — Organize items into "keeplists" (Workbenches, Quests, Expeditions, etc.)

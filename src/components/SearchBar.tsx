@@ -62,7 +62,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
   };
 
   return (
-    <div className="sticky top-[65px] z-40 bg-slate-900 py-3 px-4">
+    <div className="sticky top-[65px] z-40 py-3 px-4">
       <div className="max-w-4xl mx-auto relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
         <input

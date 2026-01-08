@@ -78,7 +78,7 @@ export function HomePage() {
   const visibleItems = filteredItems;
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen">
       <Header />
       <SearchBar value={searchQuery} onChange={setSearchQuery} />
       <Intro />

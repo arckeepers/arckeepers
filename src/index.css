@@ -108,19 +108,6 @@ input:focus-visible {
   @apply outline-2 outline-offset-2 outline-blue-500;
 }
 
-/* GitHub corner octocat wave animation */
-@keyframes octocat-wave {
-  0%, 100% {
-    transform: rotate(0);
-  }
-  20%, 60% {
-    transform: rotate(-25deg);
-  }
-  40%, 80% {
-    transform: rotate(10deg);
-  }
-}
-
 /* Screen reader only - visually hidden but accessible */
 .sr-only {
   position: absolute;

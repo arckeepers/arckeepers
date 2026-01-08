@@ -2,13 +2,13 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="71"
-   height="99.999992"
-   viewBox="0 0 18.785416 26.458331"
+   width="100"
+   height="100"
+   viewBox="0 0 26.458333 26.458333"
    version="1.1"
    id="svg1"
    inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
-   sodipodi:docname="Logo.svg"
+   sodipodi:docname="Logo PWA.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -34,96 +34,89 @@
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1">
     <sodipodi:guide
-       position="9.789583,-2.0505228"
+       position="9.7895832,-2.0505208"
        orientation="0.88229123,0.47070393"
        id="guide1"
        inkscape:locked="false"
        inkscape:label=""
        inkscape:color="rgb(0,134,229)" />
     <sodipodi:guide
-       position="26.458332,26.45833"
+       position="26.458333,26.458333"
        orientation="100,0"
        id="guide2"
        inkscape:locked="false" />
     <sodipodi:guide
-       position="21.646553,33.403642"
+       position="21.646553,33.403645"
        orientation="-0.88229123,0.47070393"
        id="guide3"
        inkscape:locked="false"
        inkscape:label=""
        inkscape:color="rgb(0,134,229)" />
     <sodipodi:guide
-       position="0,-2.0186106e-06"
+       position="0,0"
        orientation="-100,0"
        id="guide4"
        inkscape:locked="false" />
     <sodipodi:guide
-       position="1.190625,26.45833"
+       position="1.190625,26.458333"
        orientation="0,-1"
        id="guide5"
        inkscape:locked="false" />
     <sodipodi:guide
-       position="14.552083,-2.0186106e-06"
+       position="14.552083,0"
        orientation="0,-1"
        id="guide6"
        inkscape:locked="false" />
-    <inkscape:page
-       x="0"
-       y="0"
-       width="18.785416"
-       height="26.45833"
-       id="page2"
-       margin="0"
-       bleed="0" />
   </sodipodi:namedview>
   <defs
      id="defs1">
     <clipPath
        clipPathUnits="userSpaceOnUse"
-       id="clipPath1">
-      <rect
-         style="fill:#000000;stroke-width:1.465"
-         id="rect2"
-         width="26.458332"
-         height="26.458332"
-         x="0"
-         y="0" />
+       id="clipPath7">
+      <circle
+         style="display:inline;fill:#000000;stroke:none;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+         id="circle8"
+         cx="13.229166"
+         cy="13.229166"
+         r="13.229166" />
     </clipPath>
   </defs>
   <g
      inkscape:label="Tick lines"
      inkscape:groupmode="layer"
      id="layer1"
-     clip-path="url(#clipPath1)">
+     clip-path="url(#clipPath7)">
+    <rect
+       style="fill:#000000;stroke:none;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+       id="rect6"
+       width="61.978645"
+       height="60.192707"
+       x="-19.490234"
+       y="-23.014761"
+       inkscape:label="BG" />
     <path
        style="fill:none;stroke:#f80e10;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       d="M -10.287064,-12.563812 4.1439713,14.485833 22.037943,-19.054782"
+       d="M -7.3911647,-12.299133 7.0398704,14.750512 24.933843,-18.790103"
        id="path6"
        sodipodi:nodetypes="ccc"
        inkscape:label="Red" />
     <path
        style="fill:none;stroke:#f9ce08;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       d="M -10.287064,-8.8596439 4.1439713,18.190002 23.994796,-19.018557"
+       d="M -7.3911647,-8.5949648 7.0398704,18.454681 26.890696,-18.753878"
        id="path6-4"
        sodipodi:nodetypes="ccc"
        inkscape:label="Yellow" />
     <path
        style="fill:none;stroke:#2df186;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       d="M -10.287064,-5.1554769 4.1439713,21.894171 25.910198,-18.904634"
+       d="M -7.3911647,-4.8907978 7.0398704,22.15885 28.806098,-18.639955"
        id="path6-4-9"
        sodipodi:nodetypes="ccc"
        inkscape:label="Green" />
     <path
        style="fill:none;stroke:#84f5ed;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       d="M -10.287064,-1.4513101 4.1439713,25.59834 28.132485,-19.36594"
+       d="M -7.3911647,-1.186631 7.0398704,25.863019 31.028385,-19.101261"
        id="path6-4-9-3"
        sodipodi:nodetypes="ccc"
        inkscape:label="Blue" />
   </g>
-  <circle
-     style="display:none;fill:#000000;stroke:none;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-     id="circle7"
-     cx="13.229166"
-     cy="13.229166"
-     r="13.229166" />
 </svg>

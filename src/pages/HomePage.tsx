@@ -107,8 +107,25 @@ export function HomePage() {
         )}
 
         {/* Item count footer */}
-        <div className="mt-6 text-center text-sm text-slate-500">
-          {itemsWithDemands.length} items tracked
+        <div className="mt-6 flex items-center justify-center gap-4 text-sm text-slate-500">
+          <span>{itemsWithDemands.length} items</span>
+          <span
+            className="text-2xl font-bold text-slate-600 select-none"
+            aria-hidden="true"
+          >
+            &middot;
+          </span>
+          <span>
+            Data provided by{" "}
+            <a
+              href="https://metaforge.app/arc-raiders"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              MetaForge
+            </a>
+          </span>
         </div>
       </main>
     </div>

@@ -23,41 +23,27 @@ export function Intro() {
         <div className="mt-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700 text-sm text-slate-300 space-y-3">
           <p>
             <strong className="text-slate-100">ARC Keepers</strong> is a loot
-            tracking companion for ARC Raiders. It helps you track which rare or
-            difficult to find items you need to complete workbenches, projects
-            and quests.
+            tracking companion for ARC Raiders. It helps you track which rare
+            items you need to complete workbenches, projects and quests. Very
+            common items are intentionally excluded.
           </p>
 
-          <div>
+          <p>
             <strong className="text-slate-100">Keeplists</strong> are
-            collections of items that you need to keep:
-            <ul className="list-disc ml-5 mt-1 space-y-1">
-              <li>
-                <strong>Workbenches</strong> — Items needed for building your
-                workbenches for new or expeditioned players
-              </li>
-              <li>
-                <strong>Expedition 2</strong> — Items for the expedition project
-              </li>
-              <li>
-                <strong>Quests</strong> — Consolidated quest requirements
-              </li>
-              <li>
-                <strong>Projects</strong> — Seasonal event projects
-              </li>
-            </ul>
-          </div>
+            collections of items that you need to keep for different purposes,
+            e.g. for Projects, Scrappy, or seasonal events.
+          </p>
 
           <p>
-            <strong className="text-slate-100">Allocated Inventory:</strong>{" "}
-            Items are tracked per-list, e.g. Leaper Pulse Units for workbenches,
-            quests and projects are tracked separately.
+            <strong className="text-slate-100">Your Keeplists:</strong> You can
+            create custom keeplists to track items you need e.g. for crafting or
+            recycling. Items in these keeplists are tracked separately.
           </p>
 
           <p>
             <strong className="text-slate-100">Keyboard Tip:</strong> Just start
             typing to search! Press any letter key and the search bar will focus
-            automatically.
+            automatically. Press Escape to clear the search.
           </p>
         </div>
       )}

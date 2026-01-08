@@ -11,10 +11,10 @@
 
   /* Rarity colors */
   --rarity-common: #9ca3af;
-  --rarity-uncommon: #4ade80;
-  --rarity-rare: #60a5fa;
-  --rarity-epic: #cf329a;
-  --rarity-legendary: #fbbf24;
+  --rarity-uncommon: #26bf57;
+  --rarity-rare: #00a8f2;
+  --rarity-epic: #cc3099;
+  --rarity-legendary: #ffc600;
 }
 
 body {

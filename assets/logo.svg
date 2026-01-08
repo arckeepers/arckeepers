@@ -9,6 +9,9 @@
    id="svg1"
    inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
    sodipodi:docname="Logo.svg"
+   inkscape:export-filename="..\public\logo.svg"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,7 +28,7 @@
      inkscape:document-units="mm"
      showguides="true"
      inkscape:zoom="4"
-     inkscape:cx="-46.125"
+     inkscape:cx="-46.25"
      inkscape:cy="27.125"
      inkscape:window-width="2560"
      inkscape:window-height="1369"
@@ -89,19 +92,19 @@
      clip-path="url(#clipPath1)">
     <path
        style="fill:none;stroke:#f80e10;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       d="M -10.287064,-12.563812 4.1439713,14.485833 22.037943,-19.054782"
+       d="M -10.287064,-13.092979 4.1439713,13.956666 22.037943,-19.583949"
        id="path6"
        sodipodi:nodetypes="ccc"
        inkscape:label="Red" />
     <path
        style="fill:none;stroke:#f9ce08;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       d="M -10.287064,-8.8596439 4.1439713,18.190002 23.994796,-19.018557"
+       d="M -10.287064,-9.2124219 4.1439713,17.837224 23.994796,-19.371335"
        id="path6-4"
        sodipodi:nodetypes="ccc"
        inkscape:label="Yellow" />
     <path
        style="fill:none;stroke:#2df186;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       d="M -10.287064,-5.1554769 4.1439713,21.894171 25.910198,-18.904634"
+       d="M -10.287064,-5.3318659 4.1439713,21.717782 25.910198,-19.081023"
        id="path6-4-9"
        sodipodi:nodetypes="ccc"
        inkscape:label="Green" />

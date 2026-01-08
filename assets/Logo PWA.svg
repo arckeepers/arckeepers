@@ -9,6 +9,9 @@
    id="svg1"
    inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
    sodipodi:docname="Logo PWA.svg"
+   inkscape:export-filename="..\public\pwa-512x512.png"
+   inkscape:export-xdpi="491.51999"
+   inkscape:export-ydpi="491.51999"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,7 +28,7 @@
      inkscape:document-units="mm"
      showguides="true"
      inkscape:zoom="4"
-     inkscape:cx="-46.125"
+     inkscape:cx="-46.25"
      inkscape:cy="27.125"
      inkscape:window-width="2560"
      inkscape:window-height="1369"
@@ -96,19 +99,19 @@
        inkscape:label="BG" />
     <path
        style="fill:none;stroke:#f80e10;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       d="M -7.3911647,-12.299133 7.0398704,14.750512 24.933843,-18.790103"
+       d="M -7.3911647,-12.8283 7.0398704,14.221345 24.933843,-19.31927"
        id="path6"
        sodipodi:nodetypes="ccc"
        inkscape:label="Red" />
     <path
        style="fill:none;stroke:#f9ce08;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       d="M -7.3911647,-8.5949648 7.0398704,18.454681 26.890696,-18.753878"
+       d="M -7.3911647,-8.947743 7.0398704,18.101903 26.890696,-19.106656"
        id="path6-4"
        sodipodi:nodetypes="ccc"
        inkscape:label="Yellow" />
     <path
        style="fill:none;stroke:#2df186;stroke-width:1.465;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
-       d="M -7.3911647,-4.8907978 7.0398704,22.15885 28.806098,-18.639955"
+       d="M -7.3911647,-5.0671871 7.0398704,21.982461 28.806098,-18.816344"
        id="path6-4-9"
        sodipodi:nodetypes="ccc"
        inkscape:label="Green" />

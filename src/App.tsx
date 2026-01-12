@@ -3,6 +3,7 @@ import { HomePage } from "./pages/HomePage";
 import { DevPage } from "./pages/DevPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { StatusAnnouncerProvider } from "./components/StatusAnnouncer";
+
 import "./index.css";
 
 function App() {

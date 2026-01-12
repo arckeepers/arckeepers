@@ -3,6 +3,10 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
 import { initPostHog, posthog } from "./utils/posthog";
+import { initializeDataVersionSystem } from "./utils/dataVersion";
+
+// Initialize data version system (must run before app initialization)
+initializeDataVersionSystem();
 
 // Initialize PostHog
 initPostHog();

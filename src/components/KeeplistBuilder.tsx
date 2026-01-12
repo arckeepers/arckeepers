@@ -318,7 +318,8 @@ export function KeeplistBuilder() {
   const resetToDefault = async () => {
     const confirmed = await confirm({
       title: "Reset to Default",
-      message: "Reset to the current systemKeeplists.ts? Unsaved changes will be lost.",
+      message:
+        "Reset to the current systemKeeplists.ts? Unsaved changes will be lost.",
       confirmLabel: "Reset",
       variant: "warning",
     });
@@ -354,218 +355,218 @@ export function KeeplistBuilder() {
             Add List
           </button>
         </div>
-        {createError && (
-          <p className="text-sm text-red-400">{createError}</p>
-        )}
+        {createError && <p className="text-sm text-red-400">{createError}</p>}
       </div>
 
       {/* Keeplists */}
       <div className="space-y-3">
-        {keeplists.map((keeplist) => (
-          <div
-            key={keeplist.id}
-            className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden"
-          >
-            {/* List header */}
-            <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/80">
-              <button
-                onClick={() => toggleExpanded(keeplist.id)}
-                className="text-slate-400 hover:text-slate-200"
-              >
-                {expandedLists.has(keeplist.id) ? (
-                  <ChevronDown className="w-5 h-5" />
-                ) : (
-                  <ChevronRight className="w-5 h-5" />
-                )}
-              </button>
-              <span className="flex-1 font-medium">{keeplist.name}</span>
-              <span className="text-sm text-slate-500">
-                {keeplist.items.length} items
-              </span>
-              <button
-                onClick={() => removeKeeplist(keeplist.id, keeplist.name)}
-                className="p-1 text-slate-500 hover:text-red-400 transition-colors"
-                title="Remove keeplist"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+        {keeplists
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((keeplist) => (
+            <div
+              key={keeplist.id}
+              className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden"
+            >
+              {/* List header */}
+              <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/80">
+                <button
+                  onClick={() => toggleExpanded(keeplist.id)}
+                  className="text-slate-400 hover:text-slate-200"
+                >
+                  {expandedLists.has(keeplist.id) ? (
+                    <ChevronDown className="w-5 h-5" />
+                  ) : (
+                    <ChevronRight className="w-5 h-5" />
+                  )}
+                </button>
+                <span className="flex-1 font-medium">{keeplist.name}</span>
+                <span className="text-sm text-slate-500">
+                  {keeplist.items.length} items
+                </span>
+                <button
+                  onClick={() => removeKeeplist(keeplist.id, keeplist.name)}
+                  className="p-1 text-slate-500 hover:text-red-400 transition-colors"
+                  title="Remove keeplist"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
 
-            {/* List items */}
-            {expandedLists.has(keeplist.id) && (
-              <div className="px-4 pb-3 space-y-2">
-                {keeplist.items.map((item) => {
-                  const itemData = getItemByIdWithFallback(item.itemId);
+              {/* List items */}
+              {expandedLists.has(keeplist.id) && (
+                <div className="px-4 pb-3 space-y-2">
+                  {keeplist.items.map((item) => {
+                    const itemData = getItemByIdWithFallback(item.itemId);
 
-                  return (
-                    <div
-                      key={item.itemId}
-                      className="flex items-center gap-3 py-2 px-3 bg-slate-900/50 rounded-lg"
-                    >
-                      <span className="flex-1 text-sm">{itemData.name}</span>
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded rarity-${itemData.rarity.toLowerCase()}`}
+                    return (
+                      <div
+                        key={item.itemId}
+                        className="flex items-center gap-3 py-2 px-3 bg-slate-900/50 rounded-lg"
                       >
-                        {itemData.rarity}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-slate-500">Qty:</span>
-                        <input
-                          ref={(el) => {
-                            if (el) {
-                              qtyInputRefs.current.set(
-                                `${keeplist.id}-${item.itemId}`,
-                                el
-                              );
+                        <span className="flex-1 text-sm">{itemData.name}</span>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded rarity-${itemData.rarity.toLowerCase()}`}
+                        >
+                          {itemData.rarity}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-slate-500">Qty:</span>
+                          <input
+                            ref={(el) => {
+                              if (el) {
+                                qtyInputRefs.current.set(
+                                  `${keeplist.id}-${item.itemId}`,
+                                  el
+                                );
+                              }
+                            }}
+                            type="number"
+                            min="1"
+                            value={item.qtyRequired}
+                            onChange={(e) =>
+                              updateItemQty(
+                                keeplist.id,
+                                item.itemId,
+                                parseInt(e.target.value) || 1
+                              )
                             }
-                          }}
-                          type="number"
-                          min="1"
-                          value={item.qtyRequired}
-                          onChange={(e) =>
-                            updateItemQty(
-                              keeplist.id,
-                              item.itemId,
-                              parseInt(e.target.value) || 1
-                            )
+                            onKeyDown={(e) =>
+                              handleQtyKeyDown(
+                                e,
+                                keeplist.id,
+                                item.itemId,
+                                item.qtyRequired
+                              )
+                            }
+                            onFocus={() =>
+                              setFocusedQtyItem({
+                                keeplistId: keeplist.id,
+                                itemId: item.itemId,
+                              })
+                            }
+                            onBlur={() => {
+                              // Only clear if this is still the focused item
+                              setFocusedQtyItem((prev) =>
+                                prev?.keeplistId === keeplist.id &&
+                                prev?.itemId === item.itemId
+                                  ? null
+                                  : prev
+                              );
+                            }}
+                            className={`w-16 px-2 py-1 bg-slate-800 border rounded text-sm text-center transition-colors ${
+                              focusedQtyItem?.keeplistId === keeplist.id &&
+                              focusedQtyItem?.itemId === item.itemId
+                                ? "border-blue-500 ring-1 ring-blue-500"
+                                : "border-slate-700"
+                            }`}
+                          />
+                        </div>
+                        <button
+                          onClick={() =>
+                            removeItemFromList(keeplist.id, item.itemId)
                           }
-                          onKeyDown={(e) =>
-                            handleQtyKeyDown(
-                              e,
-                              keeplist.id,
-                              item.itemId,
-                              item.qtyRequired
-                            )
-                          }
-                          onFocus={() =>
-                            setFocusedQtyItem({
-                              keeplistId: keeplist.id,
-                              itemId: item.itemId,
-                            })
-                          }
-                          onBlur={() => {
-                            // Only clear if this is still the focused item
-                            setFocusedQtyItem((prev) =>
-                              prev?.keeplistId === keeplist.id &&
-                              prev?.itemId === item.itemId
-                                ? null
-                                : prev
-                            );
-                          }}
-                          className={`w-16 px-2 py-1 bg-slate-800 border rounded text-sm text-center transition-colors ${
-                            focusedQtyItem?.keeplistId === keeplist.id &&
-                            focusedQtyItem?.itemId === item.itemId
-                              ? "border-blue-500 ring-1 ring-blue-500"
-                              : "border-slate-700"
-                          }`}
+                          className="p-1 text-slate-500 hover:text-red-400 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    );
+                  })}
+
+                  {/* Add item to list */}
+                  {addingToList === keeplist.id ? (
+                    <div className="mt-2 p-3 bg-slate-900 rounded-lg border border-slate-600">
+                      <div className="relative mb-2">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                        <input
+                          type="text"
+                          value={itemSearch}
+                          onChange={(e) => setItemSearch(e.target.value)}
+                          onKeyDown={(e) => handleSearchKeyDown(e, keeplist.id)}
+                          placeholder="Search... (↑↓ navigate, Enter select, Esc cancel)"
+                          autoFocus
+                          className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
-                      <button
-                        onClick={() =>
-                          removeItemFromList(keeplist.id, item.itemId)
-                        }
-                        className="p-1 text-slate-500 hover:text-red-400 transition-colors"
+                      <div
+                        ref={listRef}
+                        className="max-h-48 overflow-y-auto space-y-1"
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  );
-                })}
+                        {(() => {
+                          let selectableIndex = 0;
 
-                {/* Add item to list */}
-                {addingToList === keeplist.id ? (
-                  <div className="mt-2 p-3 bg-slate-900 rounded-lg border border-slate-600">
-                    <div className="relative mb-2">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                      <input
-                        type="text"
-                        value={itemSearch}
-                        onChange={(e) => setItemSearch(e.target.value)}
-                        onKeyDown={(e) => handleSearchKeyDown(e, keeplist.id)}
-                        placeholder="Search... (↑↓ navigate, Enter select, Esc cancel)"
-                        autoFocus
-                        className="w-full pl-9 pr-3 py-2 bg-slate-800 border border-slate-700 rounded text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div
-                      ref={listRef}
-                      className="max-h-48 overflow-y-auto space-y-1"
-                    >
-                      {(() => {
-                        let selectableIndex = 0;
+                          return filteredItems.map((item) => {
+                            const isDisabled = keeplist.items.some(
+                              (i) => i.itemId === item.id
+                            );
+                            const currentSelectableIndex = isDisabled
+                              ? -1
+                              : selectableIndex++;
+                            const isHighlighted =
+                              !isDisabled &&
+                              currentSelectableIndex === highlightedIndex;
 
-                        return filteredItems.map((item) => {
-                          const isDisabled = keeplist.items.some(
-                            (i) => i.itemId === item.id
-                          );
-                          const currentSelectableIndex = isDisabled
-                            ? -1
-                            : selectableIndex++;
-                          const isHighlighted =
-                            !isDisabled &&
-                            currentSelectableIndex === highlightedIndex;
-
-                          return (
-                            <button
-                              key={item.id}
-                              onClick={() =>
-                                addItemToList(keeplist.id, item.id)
-                              }
-                              disabled={isDisabled}
-                              data-highlighted={isHighlighted}
-                              className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm rounded transition-colors ${
-                                isHighlighted
-                                  ? "bg-blue-600 text-white"
-                                  : "hover:bg-slate-800"
-                              } ${
-                                isDisabled
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : ""
-                              }`}
-                            >
-                              <span className="flex-1">{item.name}</span>
-                              <span
-                                className={`text-xs ${
+                            return (
+                              <button
+                                key={item.id}
+                                onClick={() =>
+                                  addItemToList(keeplist.id, item.id)
+                                }
+                                disabled={isDisabled}
+                                data-highlighted={isHighlighted}
+                                className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm rounded transition-colors ${
                                   isHighlighted
-                                    ? "text-blue-200"
-                                    : `rarity-${item.rarity.toLowerCase()}`
+                                    ? "bg-blue-600 text-white"
+                                    : "hover:bg-slate-800"
+                                } ${
+                                  isDisabled
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
                                 }`}
                               >
-                                {item.rarity}
-                              </span>
-                            </button>
-                          );
-                        });
-                      })()}
+                                <span className="flex-1">{item.name}</span>
+                                <span
+                                  className={`text-xs ${
+                                    isHighlighted
+                                      ? "text-blue-200"
+                                      : `rarity-${item.rarity.toLowerCase()}`
+                                  }`}
+                                >
+                                  {item.rarity}
+                                </span>
+                              </button>
+                            );
+                          });
+                        })()}
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <button
+                          onClick={() => {
+                            setAddingToList(null);
+                            setItemSearch("");
+                          }}
+                          className="text-xs text-slate-500 hover:text-slate-300"
+                        >
+                          Cancel (Esc)
+                        </button>
+                        <span className="text-xs text-slate-600">
+                          {getSelectableItems(keeplist.id).length} available
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between mt-2">
-                      <button
-                        onClick={() => {
-                          setAddingToList(null);
-                          setItemSearch("");
-                        }}
-                        className="text-xs text-slate-500 hover:text-slate-300"
-                      >
-                        Cancel (Esc)
-                      </button>
-                      <span className="text-xs text-slate-600">
-                        {getSelectableItems(keeplist.id).length} available
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setAddingToList(keeplist.id)}
-                    className="w-full flex items-center justify-center gap-2 py-2 text-sm text-slate-500 hover:text-slate-300 hover:bg-slate-900/50 rounded-lg transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Item
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+                  ) : (
+                    <button
+                      onClick={() => setAddingToList(keeplist.id)}
+                      className="w-full flex items-center justify-center gap-2 py-2 text-sm text-slate-500 hover:text-slate-300 hover:bg-slate-900/50 rounded-lg transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Item
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
       </div>
 
       {/* Actions */}

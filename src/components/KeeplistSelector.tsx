@@ -3,8 +3,12 @@ import { useAppStore } from "../store/useAppStore";
 
 export function KeeplistSelector() {
   const keeplists = useAppStore((state) => state.keeplists);
-  const activeKeeplistIds = useAppStore((state) => state.settings.activeKeeplistIds);
-  const toggleKeeplistActive = useAppStore((state) => state.toggleKeeplistActive);
+  const activeKeeplistIds = useAppStore(
+    (state) => state.settings.activeKeeplistIds
+  );
+  const toggleKeeplistActive = useAppStore(
+    (state) => state.toggleKeeplistActive
+  );
 
   const systemKeeplists = keeplists.filter((kl) => kl.isSystem);
   const userKeeplists = keeplists.filter((kl) => !kl.isSystem);
@@ -14,9 +18,10 @@ export function KeeplistSelector() {
     return activeKeeplistIds.includes(id);
   };
 
-  const activeCount = activeKeeplistIds.length === 0 
-    ? keeplists.length 
-    : activeKeeplistIds.length;
+  const activeCount =
+    activeKeeplistIds.length === 0
+      ? keeplists.length
+      : activeKeeplistIds.length;
 
   return (
     <div className="space-y-4">
@@ -28,7 +33,8 @@ export function KeeplistSelector() {
       </div>
 
       <p className="text-sm text-slate-400">
-        Toggle which keeplists appear in the main view. Disabled keeplists won't show their items.
+        Toggle which keeplists appear in the main view. Disabled keeplists won't
+        show their items.
       </p>
 
       {/* System Keeplists */}
@@ -39,31 +45,37 @@ export function KeeplistSelector() {
             System Keeplists
           </h4>
           <div className="space-y-1">
-            {systemKeeplists.map((keeplist) => (
-              <button
-                key={keeplist.id}
-                onClick={() => toggleKeeplistActive(keeplist.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                  isActive(keeplist.id)
-                    ? "bg-blue-600/20 border border-blue-500/50"
-                    : "bg-slate-800 border border-slate-700 opacity-60"
-                }`}
-              >
-                <div
-                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+            {systemKeeplists
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map((keeplist) => (
+                <button
+                  key={keeplist.id}
+                  onClick={() => toggleKeeplistActive(keeplist.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive(keeplist.id)
-                      ? "bg-blue-500 border-blue-500"
-                      : "border-slate-600"
+                      ? "bg-blue-600/20 border border-blue-500/50"
+                      : "bg-slate-800 border border-slate-700 opacity-60"
                   }`}
                 >
-                  {isActive(keeplist.id) && <Check className="w-3 h-3 text-white" />}
-                </div>
-                <span className="flex-1 text-left text-sm">{keeplist.name}</span>
-                <span className="text-xs text-slate-500">
-                  {keeplist.items.length} items
-                </span>
-              </button>
-            ))}
+                  <div
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                      isActive(keeplist.id)
+                        ? "bg-blue-500 border-blue-500"
+                        : "border-slate-600"
+                    }`}
+                  >
+                    {isActive(keeplist.id) && (
+                      <Check className="w-3 h-3 text-white" />
+                    )}
+                  </div>
+                  <span className="flex-1 text-left text-sm">
+                    {keeplist.name}
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    {keeplist.items.length} items
+                  </span>
+                </button>
+              ))}
           </div>
         </div>
       )}
@@ -93,9 +105,13 @@ export function KeeplistSelector() {
                       : "border-slate-600"
                   }`}
                 >
-                  {isActive(keeplist.id) && <Check className="w-3 h-3 text-white" />}
+                  {isActive(keeplist.id) && (
+                    <Check className="w-3 h-3 text-white" />
+                  )}
                 </div>
-                <span className="flex-1 text-left text-sm">{keeplist.name}</span>
+                <span className="flex-1 text-left text-sm">
+                  {keeplist.name}
+                </span>
                 <span className="text-xs text-slate-500">
                   {keeplist.items.length} items
                 </span>

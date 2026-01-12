@@ -1,6 +1,6 @@
 /**
  * Data Version System
- * 
+ *
  * Manages data versioning and migrations for localStorage data.
  * When the data format or key lists change, increment DATA_VERSION
  * and add a migration function to handle the upgrade.
@@ -8,7 +8,7 @@
 
 // Current application data version
 // Increment this when data format changes require migrations
-export const DATA_VERSION = 1;
+export const DATA_VERSION = 2;
 
 // LocalStorage key for storing the user's data version
 const DATA_VERSION_KEY = "arckeepers-data-version";
@@ -66,30 +66,110 @@ export function runMigrations(): void {
   if (localVersion > appVersion) {
     console.warn(
       `Local data version (${localVersion}) is newer than app version (${appVersion}). ` +
-      `This may indicate a downgrade. Proceeding without migration.`
+        `This may indicate a downgrade. Proceeding without migration.`
     );
     setLocalDataVersion(appVersion);
     return;
   }
 
   // Run migrations from localVersion to appVersion
-  console.log(
-    `Migrating data from version ${localVersion} to ${appVersion}`
-  );
+  console.log(`Migrating data from version ${localVersion} to ${appVersion}`);
 
   // Migration logic will go here as versions increase
-  // Example structure:
-  // if (localVersion < 2) {
-  //   migrateToVersion2();
-  //   localVersion = 2;
-  // }
-  // if (localVersion < 3) {
+  let currentVersion = localVersion;
+
+  if (currentVersion < 2) {
+    migrateToVersion2();
+    currentVersion = 2;
+  }
+
+  // Future migrations:
+  // if (currentVersion < 3) {
   //   migrateToVersion3();
-  //   localVersion = 3;
+  //   currentVersion = 3;
   // }
 
   // Update local version to match app version
   setLocalDataVersion(appVersion);
+}
+
+/**
+ * Migration: Version 1 -> Version 2
+ * Hide the "expedition-1" keeplist by default
+ */
+function migrateToVersion2(): void {
+  const STORAGE_KEY = "arckeepers-storage";
+  const TARGET_KEEPLIST_ID = "expedition-1";
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) {
+      // No stored data, nothing to migrate
+      return;
+    }
+
+    const parsed = JSON.parse(stored);
+    if (!parsed) {
+      // Invalid format, skip migration
+      return;
+    }
+
+    // Zustand persist stores state directly, but may wrap it in a 'state' property
+    // Handle both formats
+    const state = parsed.state || parsed;
+
+    if (!state.settings) {
+      // No settings, initialize with default
+      state.settings = {
+        showCompleted: false,
+        activeKeeplistIds: [],
+        animationsEnabled: true,
+      };
+    }
+
+    const activeKeeplistIds: string[] = state.settings.activeKeeplistIds || [];
+    const keeplists = state.keeplists || [];
+
+    // Get all keeplist IDs
+    const allKeeplistIds: string[] = keeplists.map(
+      (kl: { id: string }) => kl.id
+    );
+
+    let newActiveKeeplistIds: string[];
+
+    if (activeKeeplistIds.length === 0) {
+      // All keeplists are currently active (empty array means all)
+      // Set to all IDs except expedition-1
+      newActiveKeeplistIds = allKeeplistIds.filter(
+        (id: string) => id !== TARGET_KEEPLIST_ID
+      );
+    } else {
+      // Some keeplists are already filtered
+      // Remove expedition-1 if it's in the list
+      newActiveKeeplistIds = activeKeeplistIds.filter(
+        (id: string) => id !== TARGET_KEEPLIST_ID
+      );
+    }
+
+    // Update the state
+    state.settings.activeKeeplistIds = newActiveKeeplistIds;
+
+    // Write back to localStorage
+    // Preserve the original structure (with or without 'state' wrapper)
+    if (parsed.state) {
+      parsed.state = state;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    console.log(
+      `Migration to version 2 complete: Hidden keeplist "${TARGET_KEEPLIST_ID}"`
+    );
+  } catch (error) {
+    console.error("Error during migration to version 2:", error);
+    // Don't throw - allow app to continue even if migration fails
+  }
 }
 
 /**

@@ -181,18 +181,20 @@ export const ItemCard = memo(function ItemCard({
 
         {/* Right: Keeplist demand rows stacked */}
         <div className="flex-1 flex flex-col gap-1 min-w-0">
-          {visibleDemands.map((demand, demandIndex) => (
-            <DemandRow
-              key={`${demand.keeplistId}-${demand.item.itemId}`}
-              keeplistId={demand.keeplistId}
-              keeplistName={demand.keeplistName}
-              item={demand.item}
-              compact
-              itemIndex={itemIndex}
-              demandIndex={demandIndex}
-              showCompleted={showCompleted}
-            />
-          ))}
+          {visibleDemands
+            .sort((a, b) => a.keeplistName.localeCompare(b.keeplistName))
+            .map((demand, demandIndex) => (
+              <DemandRow
+                key={`${demand.keeplistId}-${demand.item.itemId}`}
+                keeplistId={demand.keeplistId}
+                keeplistName={demand.keeplistName}
+                item={demand.item}
+                compact
+                itemIndex={itemIndex}
+                demandIndex={demandIndex}
+                showCompleted={showCompleted}
+              />
+            ))}
         </div>
       </div>
 

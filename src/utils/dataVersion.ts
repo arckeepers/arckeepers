@@ -6,12 +6,17 @@
  * and add a migration function to handle the upgrade.
  */
 
+import { systemKeeplists } from "../data/systemKeeplists";
+
 // Current application data version
 // Increment this when data format changes require migrations
 export const DATA_VERSION = 2;
 
 // LocalStorage key for storing the user's data version
 const DATA_VERSION_KEY = "arckeepers-data-version";
+
+// Storage key used by Zustand persist
+const STORAGE_KEY = "arckeepers-storage";
 
 // Default version for users who don't have a version recorded
 const DEFAULT_VERSION = 1;
@@ -98,13 +103,35 @@ export function runMigrations(): void {
  * Hide the "expedition-1" keeplist by default
  */
 function migrateToVersion2(): void {
-  const STORAGE_KEY = "arckeepers-storage";
   const TARGET_KEEPLIST_ID = "expedition-1";
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
+    
     if (!stored) {
-      // No stored data, nothing to migrate
+      // New user - create initial state with expedition-1 disabled
+      // Use system keeplists to determine all keeplist IDs
+      const allKeeplistIds = systemKeeplists.map((kl) => kl.id);
+      const activeKeeplistIds = allKeeplistIds.filter(
+        (id) => id !== TARGET_KEEPLIST_ID
+      );
+
+      const initialState = {
+        state: {
+          keeplists: systemKeeplists,
+          settings: {
+            showCompleted: false,
+            activeKeeplistIds,
+            animationsEnabled: true,
+          },
+        },
+        version: 0, // Zustand persist version
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(initialState));
+      console.log(
+        `Migration to version 2 (new user): Created initial state with "${TARGET_KEEPLIST_ID}" hidden`
+      );
       return;
     }
 
@@ -177,6 +204,21 @@ function migrateToVersion2(): void {
  * Call this once at app startup
  */
 export function initializeDataVersionSystem(): void {
+  initializeDataVersion();
+  runMigrations();
+}
+
+/**
+ * Reset the data version system
+ * This clears the stored data and version, allowing migrations to run fresh
+ * Call this when resetting app data to defaults
+ */
+export function resetDataVersionSystem(): void {
+  // Clear the storage completely
+  localStorage.removeItem(STORAGE_KEY);
+  // Reset version to trigger migrations
+  localStorage.removeItem(DATA_VERSION_KEY);
+  // Run migrations (which will create fresh initial state)
   initializeDataVersion();
   runMigrations();
 }

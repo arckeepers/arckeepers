@@ -2,6 +2,11 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Keeplist, KeeplistItem, AppSettings } from "../types";
 import { systemKeeplists } from "../data/systemKeeplists";
+import { runMigrations, resetDataVersionSystem } from "../utils/dataVersion";
+
+// Run migrations BEFORE the store is created
+// This ensures localStorage is in the correct state when Zustand loads from it
+runMigrations();
 
 interface AppStore {
   // State
@@ -409,15 +414,35 @@ export const useAppStore = create<AppStore>()(
         }
       },
 
-      // Reset to default system keeplists (keeps user keeplists)
+      // Reset to default system keeplists and run migrations
       resetToDefaults: () => {
-        set((state) => ({
-          keeplists: [
-            ...systemKeeplists,
-            ...state.keeplists.filter((kl) => !kl.isSystem),
-          ],
-          settings: defaultSettings,
-        }));
+        // Get user keeplists before reset (to preserve them)
+        const userKeeplists = get().keeplists.filter((kl) => !kl.isSystem);
+        
+        // Reset data version system (clears storage, runs migrations)
+        resetDataVersionSystem();
+        
+        // Load the migrated state from localStorage
+        const stored = localStorage.getItem("arckeepers-storage");
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            const state = parsed.state || parsed;
+            
+            // Set the migrated state, adding back user keeplists
+            set({
+              keeplists: [...(state.keeplists || systemKeeplists), ...userKeeplists],
+              settings: state.settings || defaultSettings,
+            });
+          } catch (e) {
+            console.error("Error loading state after reset:", e);
+            // Fallback to default state
+            set({
+              keeplists: [...systemKeeplists, ...userKeeplists],
+              settings: defaultSettings,
+            });
+          }
+        }
       },
     }),
     {

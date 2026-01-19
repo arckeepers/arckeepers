@@ -416,8 +416,29 @@ export const useAppStore = create<AppStore>()(
 
       // Reset to default system keeplists and run migrations
       resetToDefaults: () => {
-        // Get user keeplists before reset (to preserve them)
-        const userKeeplists = get().keeplists.filter((kl) => !kl.isSystem);
+        const currentState = get();
+        
+        // Get user keeplists before reset (to preserve them, but clear progress)
+        const userKeeplists = currentState.keeplists
+          .filter((kl) => !kl.isSystem)
+          .map((kl) => ({
+            ...kl,
+            // Reset progress on all items
+            items: kl.items.map((item) => ({
+              ...item,
+              qtyOwned: 0,
+              isCompleted: false,
+            })),
+          }));
+        
+        // Remember which user keeplists were active
+        const activeUserKeeplistIds = userKeeplists
+          .map((kl) => kl.id)
+          .filter((id) => {
+            // If activeKeeplistIds is empty, all are active
+            if (currentState.settings.activeKeeplistIds.length === 0) return true;
+            return currentState.settings.activeKeeplistIds.includes(id);
+          });
         
         // Reset data version system (clears storage, runs migrations)
         resetDataVersionSystem();
@@ -429,10 +450,17 @@ export const useAppStore = create<AppStore>()(
             const parsed = JSON.parse(stored);
             const state = parsed.state || parsed;
             
-            // Set the migrated state, adding back user keeplists
+            // Merge active IDs: migrated system keeplists + previously active user keeplists
+            const migratedActiveIds = state.settings?.activeKeeplistIds || [];
+            const mergedActiveIds = [...migratedActiveIds, ...activeUserKeeplistIds];
+            
+            // Set the migrated state, adding back user keeplists with preserved active state
             set({
               keeplists: [...(state.keeplists || systemKeeplists), ...userKeeplists],
-              settings: state.settings || defaultSettings,
+              settings: {
+                ...(state.settings || defaultSettings),
+                activeKeeplistIds: mergedActiveIds,
+              },
             });
           } catch (e) {
             console.error("Error loading state after reset:", e);
